@@ -138,7 +138,6 @@ document.querySelector('iframe').onload = ()=>{
   contentDocument.ondragend = () => { return false }
   contentDocument.ondrop = onFileDrop
 }
-document.querySelector('iframe').src = "https://wonderunit.com/ads/storyboarder?" + Math.round(Date.now() / 1000 / 60 / 6)
 
 document.querySelector('#getting-started').onclick = event => {
   event.preventDefault()
