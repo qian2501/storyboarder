@@ -1063,7 +1063,7 @@ const loadBoardUI = async () => {
           // which will render as the scene's default duration
           let newDuration = isNaN(parseInt(e.target.value, 10))
             ? undefined
-            : e.target.value
+            : parseInt(e.target.value, 10)
 
           // set the new duration value
           for (let index of selections) {
@@ -1079,7 +1079,7 @@ const loadBoardUI = async () => {
         case 'frames':
           let newFrames = isNaN(parseInt(e.target.value, 10))
             ? undefined
-            : e.target.value
+            : parseInt(e.target.value, 10)
 
           for (let index of selections) {
             boardData.boards[index].duration = newFrames != null
