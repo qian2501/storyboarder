@@ -35,7 +35,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/wonderunit/storyboarder.git"
+    "url": "git+https://github.com/qian2501/storyboarder.git"
   },
   "keywords": [
     "fountain",
@@ -43,13 +43,13 @@
     "storyboarder"
   ],
   "author": {
-    "email": "charles@wonderunit.com",
-    "name": "Wonder Unit Inc."
+    "email": "qian2501@gmail.com",
+    "name": "Qian2501"
   },
   "build": {
     "afterSign": "scripts/notarize.js",
     "asar": true,
-    "appId": "com.wonderunit.storyboarder",
+    "appId": "com.qian2501.storyboarder",
     "buildDependenciesFromSource": true,
     "compression": "maximum",
     "files": [
@@ -73,10 +73,7 @@
       "gatekeeperAssess": false
     },
     "win": {
-      "icon": "build/icon.ico",
-      "timeStampServer": "http://timestamp.comodoca.com/authenticode",
-      "certificateSubjectName": "Wonder Unit, Inc.",
-      "publisherName": "Wonder Unit, Inc."
+      "icon": "build/icon.ico"
     },
     "dmg": {
       "sign": false,
@@ -102,9 +99,9 @@
     },
     "linux": {
       "target": [
-        "AppImage",
-        "snap",
-        "deb"
+        "rpm",
+        "deb",
+        "AppImage"
       ],
       "icon": "build/icon.icns",
       "synopsis": "The fastest way to storyboard.",
