@@ -5,8 +5,8 @@ const defaultKeyMap = {
   "drawing:quick-erase-size:dec": "Alt+[",
   "drawing:clear-current-layer-modifier": "Alt",
   "drawing:scale-mode": "CommandOrControl+Alt",
-  "drawing:move-mode": "CommandOrControl",
-  "drawing:quick-erase-modifier": "Alt",
+  "drawing:move-mode": "Alt",
+  "drawing:quick-erase-modifier": "CommandOrControl",
   "drawing:exit-current-mode": "Escape",
   "drawing:pan-mode": "Space",
   "drawing:straight-line": "Shift",
@@ -79,7 +79,7 @@ const defaultKeyMap = {
   "menu:view:toggle-full-screen": "F11",
   "menu:view:toggle-developer-tools": "Alt+Command+i",
 
-  "menu:view:zoom-reset": "CommandOrControl+0",
+  "menu:view:zoom-reset": "f",
   "menu:view:zoom-in": "CommandOrControl+Plus",
   "menu:view:zoom-out": "CommandOrControl+-",
 
