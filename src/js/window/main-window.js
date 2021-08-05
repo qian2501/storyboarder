@@ -2450,10 +2450,6 @@ const addToLineMileage = value => {
 const onDrawIdle = () => {
   clearTimeout(drawIdleTimer)
 
-  // update the line mileage in two places
-  renderMetaDataLineMileage()
-  renderStats()
-
   // update the thumbnail
   updateThumbnailDisplayFromMemory()
 
@@ -3536,9 +3532,6 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
     // fix for bug where tooltip remains after ShotGeneratorPanel renders
     tooltips.closeAll()
 
-    renderShotGeneratorPanel()
-
-
     // guides && guides.setPerspectiveParams({
     //   cameraParams: board.sts && board.sts.camera,
     //   rotation: 0
@@ -3704,7 +3697,6 @@ let renderMetaData = () => {
   if (boardData.boards[currentBoard].notes) {
     document.querySelector('textarea[name="notes"]').value = boardData.boards[currentBoard].notes
   }
-  renderMetaDataLineMileage()
 
   // TODO how to regenerate tooltips?
   // if (boardData.defaultBoardTiming) {
@@ -3741,70 +3733,34 @@ const renderMetaDataLineMileage = () => {
 }
 
 const renderStats = () => {
-  //
-  //
+
   // left stats
-  //
-  let primaryStats = []
-  let secondaryStats = []
+  let stats = []
+
+  stats.push( `${util.truncateMiddle(path.basename(boardFilename, path.extname(boardFilename))).toUpperCase()}` )
 
   if (!util.isUndefined(scriptData)) {
-    primaryStats.push( `SCENE ${currentScene + 1} SHOT ${boardData.boards[currentBoard].shot}` )
+    stats.push( `SCENE ${currentScene + 1} SHOT ${boardData.boards[currentBoard].shot}` )
   } else {
-    primaryStats.push( `SHOT ${boardData.boards[currentBoard].shot}` )
+    stats.push( `SHOT ${boardData.boards[currentBoard].shot}` )
   }
 
-  let stats = []
   let totalNewShots = boardData.boards.reduce((a, b) => a + (b.newShot ? 1 : 0), 0) || 1
-  secondaryStats.push(
+  stats.push(
     `${boardData.boards.length} ${util.pluralize(boardData.boards.length, 'board').toUpperCase()}, ` +
     `${totalNewShots} ${util.pluralize(totalNewShots, 'shot').toUpperCase()}`
   )
 
-  let totalLineMileage = boardData.boards.reduce((a, b) => a + (b.lineMileage || 0), 0)
-  let avgLineMileage = totalLineMileage / boardData.boards.length
-  secondaryStats.push( (avgLineMileage/5280).toFixed(1) + ' AVG. LINE MILEAGE' )
-
-  document.querySelector('#left-stats .stats-primary').innerHTML = primaryStats.join('<br />')
-  document.querySelector('#left-stats .stats-secondary').innerHTML = secondaryStats.join('<br />')
-
-
-
-  //
-  //
-  // right stats
-  //
-  let rightStatsPrimaryEl = document.querySelector('#right-stats .stats-primary')
-  rightStatsPrimaryEl.innerHTML = util.truncateMiddle(path.basename(boardFilename, path.extname(boardFilename))) + '.storyboarder'
-  rightStatsPrimaryEl.title = path.basename(boardFilename)
-
-  // if (scriptData) {
-  //   let numScenes = scriptData.filter(data => data.type == 'scene').length
-
-  //   let numBoards = 'N' // TODO sum total number of boards in the script
-
-  //   document.querySelector('#right-stats .stats-primary').innerHTML = `${numScenes} SCENES ${numBoards} BOARDS`
-  // } else {
-  //   let numBoards = boardData.boards.length
-  //   document.querySelector('#right-stats .stats-primary').innerHTML = `${numBoards} BOARDS`
-  // }
-  // document.querySelector('#right-stats .stats-secondary').innerHTML = `AVG BOARDS PER SCENE, TOTAL TIME`
-
+  document.querySelector('#left-stats .stats-primary').innerHTML = stats.join('<br />')
 
   if (
     (scriptData && viewMode == 5) ||
     (!scriptData && viewMode == 3)
   ) {
     document.getElementById('left-stats').classList.add('stats__large')
-    document.getElementById('right-stats').classList.add('stats__large')
-
-    document.querySelector('#right-stats').style.display = 'none' // HACK hide right stats for now, until we have real data
     document.querySelector('#left-stats').style.textAlign = 'center' // HACK
   } else {
     document.getElementById('left-stats').classList.remove('stats__large')
-    document.getElementById('right-stats').classList.remove('stats__large')
-
-    document.querySelector('#right-stats').style.display = 'flex' // HACK hide right stats for now, until we have real data
     document.querySelector('#left-stats').style.textAlign = 'left' // HACK
   }
 }

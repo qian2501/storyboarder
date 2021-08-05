@@ -562,7 +562,7 @@ AppMenu.Tools = (i18n) => ({
     {
       label: i18n.t('menu.tools.shot-generator'),
       click (item, focusedWindow, event) {
-        ipcRenderer.send('revealShotGenerator')
+        ipcRenderer.send('shot-generator:open')
       }
     },
     {
