@@ -182,7 +182,7 @@ const updateHTMLText = () => {
   translateTooltip("#line-mileage", "main-window.board-information.line-mileage")
   translateTooltip("#shot-generator-container", "main-window.board-information.shot-generator-container")
   translateTooltip("#new-shot", "main-window.board-information.new-shot-tooltip")
-  translateTooltip("#duration-ms", "main-window.board-information.duration-ms")
+  translateTooltip("#duration-s", "main-window.board-information.duration-s")
   translateTooltip("#duration-fps", "main-window.board-information.duration-fps")
   translateHtml("#dialog-title", "main-window.board-information.dialog-title")
   translateTooltip("#suggested-dialogue-duration", "main-window.board-information.suggested-dialogue-duration")
@@ -327,6 +327,10 @@ let cancelTokens = {}
 
 const msecsToFrames = value => Math.round(value / 1000 * boardData.fps)
 const framesToMsecs = value => Math.round(value / boardData.fps * 1000)
+const msecsToS = value => (value / 1000).toFixed(3)
+const sToMsecs = value => Math.round(value * 1000)
+const framesToS = value => (value / boardData.fps).toFixed(3)
+const sToFrames = value => Math.round(value * boardData.fps)
 
 // via https://stackoverflow.com/a/41115086
 const serial = funcs =>
@@ -721,7 +725,9 @@ const migrateScene = () => {
   // Old file may contain string board.duration due to issue #2275
   for (let board of boardData.boards) {
     if (typeof(board.duration) != 'number') {
-      board.duration = parseInt(board.duration)
+      board.duration
+        ? board.duration = parseInt(board.duration)
+        : boardData.defaultBoardTiming
       markBoardFileDirty()
     }
   }
@@ -1069,9 +1075,9 @@ const loadBoardUI = async () => {
           // if we can't parse the value as a number (e.g.: empty string),
           // set to undefined
           // which will render as the scene's default duration
-          let newDuration = isNaN(parseInt(e.target.value, 10))
-            ? undefined
-            : parseInt(e.target.value, 10)
+          let newDuration = isNaN(parseFloat(e.target.value))
+            ? boardData.defaultBoardTiming
+            : sToMsecs(parseFloat(e.target.value))
 
           // set the new duration value
           for (let index of selections) {
@@ -1079,26 +1085,22 @@ const loadBoardUI = async () => {
           }
 
           // update the `frames` view
-          document.querySelector('input[name="frames"]').value = msecsToFrames(boardModel.boardDuration(boardData, boardData.boards[currentBoard]))
+          document.querySelector('input[name="frames"]').value = msecsToFrames(newDuration)
 
           renderThumbnailDrawer()
           renderMarkerPosition()
           break
         case 'frames':
           let newFrames = isNaN(parseInt(e.target.value, 10))
-            ? undefined
+            ? msecsToFrames(boardData.defaultBoardTiming)
             : parseInt(e.target.value, 10)
 
           for (let index of selections) {
-            boardData.boards[index].duration = newFrames != null
-              ? framesToMsecs(newFrames)
-              : undefined
+            boardData.boards[index].duration = framesToMsecs(newFrames)
           }
 
           // update the `duration` view
-          document.querySelector('input[name="duration"]').value = newFrames != null
-            ? framesToMsecs(newFrames)
-            : ''
+          document.querySelector('input[name="duration"]').value = framesToS(newFrames)
 
           renderThumbnailDrawer()
           renderMarkerPosition()
@@ -3655,8 +3657,8 @@ let renderMetaData = () => {
         label && label.classList.remove('disabled')
       }
 
-      document.querySelector('input[name="duration"]').value = boardData.boards[currentBoard].duration != null
-        ? boardData.boards[currentBoard].duration
+      document.querySelector('input[name="duration"]').value = !isNaN(boardData.boards[currentBoard].duration)
+        ? msecsToS(boardData.boards[currentBoard].duration)
         : ''
       document.querySelector('input[name="frames"]').value = msecsToFrames(boardData.boards[currentBoard].duration)
     } else {
@@ -3671,8 +3673,8 @@ let renderMetaData = () => {
       if (uniqueDurations.length == 1) {
         // unified
         let duration = uniqueDurations[0]
-        document.querySelector('input[name="duration"]').value = duration != null
-          ? duration
+        document.querySelector('input[name="duration"]').value = !isNaN(duration)
+          ? msecsToS(duration)
           : ''
         document.querySelector('input[name="frames"]').value = msecsToFrames(boardModel.boardDuration(boardData, boardData.boards[currentBoard].duration))
       } else {
