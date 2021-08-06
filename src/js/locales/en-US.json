@@ -280,15 +280,15 @@
         "title": "Open",
         "description": "Open Shot Generator"
       },
-      "new-shot": "New Shot?",
+      "new-shot": "New Shot",
       "new-shot-tooltip": {
         "title": "Is this board a new shot?",
         "description": "Check this box if the board is a new shot. You can have multiple boards per shot. This way you can animate or make a transition in a shot."
       },
       "duration": "Duration",
-      "duration-ms": {
+      "duration-s": {
         "title": "Set the board duration",
-        "description": "Enter the number of milliseconds for a board. There are 1000 milliseconds in a second. 2000 milliseconds is the default."
+        "description": "Enter the number of seconds for a board. Accepts float input. 2s is the default."
       },
       "duration-fps": {
         "title": "Set the board duration",
