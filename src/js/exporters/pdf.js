@@ -16,7 +16,7 @@ const app = require('electron').remote.app
 */
 
 
-const generatePDF = (paperSize, layout='landscape', rows, cols, spacing, boardData, basenameWithoutExt, filepath, shouldWatermark = false, watermarkImagePath = undefined, watermarkDimensions = []) => {
+const generatePDF = (paperSize, layout='table', rows, cols, spacing, boardData, basenameWithoutExt, filepath, shouldWatermark = false, watermarkImagePath = undefined, watermarkDimensions = []) => {
 
   let stringContainsForeign = (testString) => {
     let regexForeign = /[^AÁĂÂÄÀĀĄÅÃÆBCĆČÇĊDÐĎĐEÉĚÊËĖÈĒĘFGĞĢĠHĦIÍÎÏİÌĪĮJKĶLĹĽĻŁMNŃŇŅŊÑOÓÔÖÒŐŌØÕŒPÞQRŔŘŖSŚŠŞȘTŦŤŢȚUÚÛÜÙŰŪŲŮVWẂŴẄẀXYÝŶŸỲZŹŽŻaáăâäàāąåãæbcćčçċdðďđeéěêëėèēęfgğģġhħiıíîïìīįjkķlĺľļłmnńňņŋñoóôöòőōøõœpþqrŕřŗsśšşșßtŧťţțuúûüùűūųůvwẃŵẅẁxyýŷÿỳzźžż0123456789.,\/#!$%\^&\*;:{}=\-_`~()\s\?¿—–-€₪¢₡¤$ƒ₣₤₧₨£¥⋅+−×÷=≠><≥≤±≈~¬∞∫Ω∆∏∑√µ∂%‰⊳⊲↑→↓←●◊■▲▼★☐♦✓@&¶§©®℗™°|¦†ℓ‡№℮^⌘\'\"„“”‘‛’´˘ˇ¸ˆ¨˙`˝¯˛˚˜]/;
@@ -26,27 +26,36 @@ const generatePDF = (paperSize, layout='landscape', rows, cols, spacing, boardDa
 
   let headerHeight = 40
   let documentSize
-  let docwidthIdx = 1
-  let docheightIdx = 0
+  let docwidthIdx = 0
+  let docheightIdx = 1
   if (paperSize == 'LTR') {
     documentSize = [8.5*72,11*72]
   } else {
     documentSize = [595,842]
   }
-  if (layout != 'landscape') {
-    docwidthIdx = 0
-    docheightIdx = 1
+  if (layout == 'landscape') {
+    docwidthIdx = 1
+    docheightIdx = 0
   }
   aspectRatio = boardData.aspectRatio
   // if (!sceneNumber) sceneNumber = 0
   let margin = [22, 22, 22, 40]
 
-  let doc = new pdfDocument({size: documentSize, layout: layout, margin: 0})
+  let doc = new pdfDocument({
+    size: documentSize,
+    layout: layout == 'landscape' ? 'landscape' : 'portrait',
+    margin: 0
+  })
 
   doc.registerFont('thin', path.join(__dirname, '..', '..', 'fonts', 'thicccboi', 'THICCCBOI-Thin.ttf'))
   doc.registerFont('italic', path.join(__dirname, '..', '..', 'fonts', 'thicccboi', 'THICCCBOI-Regular.ttf'))
   doc.registerFont('bold', path.join(__dirname, '..', '..', 'fonts', 'thicccboi', 'THICCCBOI-Bold.ttf'))
   doc.registerFont('fallback', path.join(__dirname, '..', '..', 'fonts', 'unicore.ttf'))
+
+  if (layout == 'table') {
+    cols = 1
+    spacing = 0
+  }
 
 
   let stream = doc.pipe(fs.createWriteStream(filepath))
@@ -120,7 +129,7 @@ const generatePDF = (paperSize, layout='landscape', rows, cols, spacing, boardDa
     return best_numer + ' : ' + best_denom;
   }
 
-  let displayAspect = find_rational(aspectRatio)
+  let displayAspect = aspectRatio + ' : 1'
 
   for (var i = 0; i < pages; i++) {
     if (i != 0) {
