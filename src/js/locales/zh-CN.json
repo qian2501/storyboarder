@@ -662,7 +662,7 @@
     "saving-hint": "如果禁用，请使用 “文件 > 保存” 来保存项目。请注意对图像的更改永远是自动保存的。",
     "force-psd-reload": "当 Storyboarder 重新获得焦点时，强制重载受监视的 PSD 文件",
     "psd-reload-hint": "使用网络驱动器时启用。\n禁用来提高在 Storyboarder 和其他应用程序之间\n切换的性能。禁用时，Storyboarder \n仅在后台监视 PSD 文件（部分计算机不支持）。",
-    "default-timing": "默认绘板时间（以毫秒为单位）",
+    "default-timing": "默认绘板时间（以秒为单位）",
     "external-psd-editor": "外部 PSD 编辑器",
     "psd-editor-hint": "选择一个应用程序（例如：.exe或.app）。默认情况下，这是您的操作系统中关联 PSD 文件的应用程序。\n要重置为默认值，请取消文件提示。",
     "reveal-keymap-file": "显示快捷键设置文件",

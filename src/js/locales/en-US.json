@@ -662,7 +662,7 @@
     "saving-hint": "When disabled, use 'File > Save' to save project data. Note that changes to image data are always saved automatically.",
     "force-psd-reload": "Force reload watched PSD when Storyboarder regains focus",
     "psd-reload-hint": "Enable if working from a network drive.\nDisable to improve performance when switching between\nStoryboarder and other apps. When disabled, Storyboarder only\nwatches PSD files in the background (which is not supported on all computers).",
-    "default-timing": "Default Board Timing (in msecs)",
+    "default-timing": "Default Board Timing (in s)",
     "external-psd-editor": "External PSD Editor",
     "psd-editor-hint": "Select an application (e.g.: .exe or .app). By default this will be the application associated in your operating system for opening PSD files.\nTo reset to default, cancel the file prompt.",
     "reveal-keymap-file": "Reveal Keymap File",
