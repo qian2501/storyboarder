@@ -47,7 +47,6 @@
     "name": "Qian2501"
   },
   "build": {
-    "afterSign": "scripts/notarize.js",
     "asar": true,
     "appId": "com.qian2501.storyboarder",
     "buildDependenciesFromSource": true,
