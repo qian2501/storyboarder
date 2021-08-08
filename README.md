@@ -2,109 +2,50 @@
 
 Storyboarder makes it easy to visualize a story as fast you can draw stick figures. Quickly draw to test if a story idea works. Create and show animatics to others. Express your story idea without making a movie.
 
-[![screenshot](https://user-images.githubusercontent.com/441117/27712058-4404e214-5cf3-11e7-8fa3-b88ae924d154.gif)](https://www.wonderunit.com/storyboarder)
+For original README please refer to [this file](README_orig.md).
 
-Whether you are a story artist, writer, director, in advertising, or just a person with an idea, you can use this to quickly make storyboards.
+# About this fork
 
-## Download
+This fork is meant to make this tool usable.
 
-### [Click here to download the latest release](https://wonderunit.com/storyboarder/)
+Since the original repo have been stopped develop since May, 2021, and too many user hostile issue un-resolved, I decided to make my own fork and make this tool more usable.
 
-[PLEASE PLEASE PLEASE submit issues with bugs, ideas, suggestions, or any feedback! Thanks!](https://github.com/wonderunit/storyboarder/issues)
+Please note that this fork may never develop new feature.
 
-Also, if this project seems interesting, could you press that star button at the top right? Thanks!!!!
+# Build
 
-## It's easy...
+The same as any other Electron project.
 
-1. Start a blank storyboard or open a Fountain screenplay.
-2. Start drawing boards using a mouse or wacom open. Or print out
-3. Flip through the boards, play it back, pitch it, make changes.
+electron-builder is used here, inherited from the origin repo.
 
-Don't get slowed down by too many buttons or options. You're here to board stories, not make the next Moner Lisa.
+## Pre-requisite
+Have node.js installed and run
+`npm install`
 
-Works with Pens on any tablet or Cintiq or even a Microsoft Surface. Also works with a mouse.
+## Distribution
+For Windows:
+`npm run dist:win`
 
-## Features:
+For Mac:
+`npm run dist:mac`
 
-* Simple, Smooth Drawing
-* Super Simple Interface
-* Printed Worksheets
-* Works with Wacom
-* Easy Organization
-* Draw Straight Lines
-* Works with Fountain
-* Open in Photoshop
-* Measure Line Mileage
-* Guides to Help Drawing
-* Reference Layer
-* Onion Skin
-* Track changes
-* Collaborate on Github
-* Export to various Formats
+For Linux:
+`npm run dist:linux`
 
-## We have 4 brush types which are all you need to draw fast:
+After build finished, you may find it under `dist` folder under the folder cloned this repo.
 
-* **Light pencil** for roughing
-* **Pencil** for fast sketching
-* **Pen** for inking strong lines
-* **Brush** for filling in some shading
+## A few annoying things
+On Windows DO NOT build with npm installed within WSL, no matter what console emulator you use.
 
-You can also specificy 3 brush sizes for each type.
+On Mac you may get rejected by Apple when running since notarizing is skipped, which cost a lot for a non-profit personal project. You need to bypass it you know how.
 
-Each brush has its own 5 color pallete. You can set all the colors as you like.
+Linux is untested, it's hard to say if it ever works.
 
-There are no layers. Again, you're boarding story ideas. Managing layers creates so much unneeded complexity and UI mess. A board artist that uses layers probably voted for Trump - or paid way too much for "Pro" storyboard software.
+# Issues
 
-Made a mistake? You can erase that shit.
+Since I am the only person on this repo now, issues may not be handled in time. But please do submit issue if there is a bug, and please refer to the basic format from the original repo.
 
-You can undo and redo.
+# Releases
 
-Made a big mistake? You can clear the whole thing.
-
-If it's off center or too big or too small, you can shift your drawing around or scale it.
-
-Need a straight line? Hold shift while you're drawing and you got straight lines.
-
-## There are 5 guide overlays to toggle:
-
-*  Grid
-*  Center Marks
-*  Thirds
-*  Angles
-*  Onion skin (previous and next board in shot)
-
-## We got mad simple key commands:
-
-* Light Pencil: <kbd>1</kbd>
-* Pencil: <kbd>2</kbd>
-* Pen: <kbd>3</kbd>
-* Brush: <kbd>4</kbd>
-* Eraser: <kbd>5</kbd>
-* Clear: <kbd>Delete</kbd> or <kbd>Backspace</kbd>
-* Undo: <kbd>Cmd</kbd>+<kbd>z</kbd>
-* Redo: <kbd>Cmd</kbd>+<kbd>y</kbd>
-* Smaller Brush: <kbd>[</kbd>
-* Bigger Brush: <kbd>]</kbd>
-* Straight Lines: <kbd>Hold shift while drawing</kbd>
-* Move Contents: <kbd>Hold command</kbd>
-* Scale Contents: <kbd>Cmd</kbd>+<kbd>Option</kbd>
-* Color Pick: <kbd>Hold Option</kbd>
-
-## FAQ
-
-**"CHARLES, I RESPEKT UR OPINIONATED SOFTWARE DESIGN GANGSTER, BUT I NEED TO POLISH MY DRAWINGS TIGHTER."**
-No problem, needy bruh. You can click a button to edit in photoshop, and when you save, it updates in Storyboarder.
-
-**"CHARLES, STORYBOARDER IS REVOLUTIONARY. PERHAPS BIGGER THAN JESUS AND WRESTLING. - Saul Bass"**
-Fuck you, Saul Bass. Absolutely bigger than Jesus and wrestling. Also, your work output has really dropped off in recent years.
-
-**"HOW COME WHEN I'M DRAWING, I HEAR THE IMPERIAL MARCH?"**
-You're probably boarding on the Simpsons. You might want to escape North Korea through China. If not shot crossing the river, you will probably be sold into slavery by the Chinese. Work for 5 years, buy your freedom and make your way to Seoul. This should fix your issue. You're welcome.
-
-## Notes on Open Source License
-
-https://wonderunit.com/thoughts-on-free-and-open-source/
-
-## Contributers
-
-We would love help on this project. If you are interested in helping out feel free to email charles@wonderunit.com or submit a PR.
+I may not do any release in any short term.
+So at least for now, please build on your own. If you are not a tech guy, please go for your tech friends.
