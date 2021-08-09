@@ -1,6 +1,7 @@
 const fs = require('fs')
 const path = require('path')
 const util = require('../utils/index')
+const boardModel = require('../models/board')
 const pdfDocument = require('pdfkit')
 const moment = require('moment')
 const app = require('electron').remote.app
@@ -52,7 +53,7 @@ const generatePDF = (paperSize, layout='table', rows, cols, spacing, boardData, 
   doc.registerFont('bold', path.join(__dirname, '..', '..', 'fonts', 'thicccboi', 'THICCCBOI-Bold.ttf'))
   doc.registerFont('fallback', path.join(__dirname, '..', '..', 'fonts', 'unicore.ttf'))
 
-let tableHeaderSize = 25
+  let tableHeaderSize = 25
 
   if (layout == 'table') {
     cols = 1
@@ -90,7 +91,7 @@ let tableHeaderSize = 25
 
   let textHeight = 0
 
-  if (index > -1) {
+  if (index > -1 && layout != 'table') {
     doc.fontSize(7)
     if( boardData.boards[index].dialogue ) {
       doc.font('bold')
@@ -109,7 +110,7 @@ let tableHeaderSize = 25
   let imgSize
   let shrinkedImg = false
 
-  if((boxSize[0]/(boxSize[1]-textHeight)) <= aspectRatio) {
+  if((boxSize[0]/(boxSize[1]-textHeight)) < aspectRatio + 0.005) {
     imgSize = [boxSize[0], boxSize[0]/aspectRatio]
   } else {
     imgSize = [(boxSize[1]-textHeight)*aspectRatio, (boxSize[1]-textHeight)]
@@ -243,11 +244,22 @@ let tableHeaderSize = 25
             doc.font('thin')
           }
 
-          doc.text(boardData.boards[currentBoard].shot, x+offset, y-8, {width: 40, align: 'left'})
+          if (layout == 'table') {
+            if (boardData.boards[currentBoard].newShot) {
+              doc.text(parseInt(boardData.boards[currentBoard].shot), x, y, {width: tableHeaderSize, align: 'left'})
+            }
+          } else {
+            doc.text(boardData.boards[currentBoard].shot, x+offset, y-8, {width: 40, align: 'left'})
+          }
 
           doc.font('thin')
           doc.fontSize(4)
-          doc.text(util.msToTime(boardData.boards[currentBoard].time), x+offset+imgSize[0]-40, y-6, {width: 40, align: 'right'})
+
+          if (layout == 'table') {
+            doc.text(util.msToTime(boardModel.boardDuration(boardData, boardData.boards[currentBoard])), x+tableHeaderSize, y, {width: tableHeaderSize, align: 'left'})
+          } else {
+            doc.text(util.msToTime(boardData.boards[currentBoard].time), x+offset+imgSize[0]-40, y-6, {width: 40, align: 'right'})
+          }
 
           let textOffset = ( boardData.boards[currentBoard].action || boardData.boards[currentBoard].dialogue ) ? 5 : 0
           let imgAligned = false
@@ -264,30 +276,35 @@ let tableHeaderSize = 25
               doc.font('bold')
             }
 
-            if (shrinkedImg) {
-              let metaHeight = doc.heightOfString(boardData.boards[currentBoard].dialogue, {width: imgSize[0], align: 'center'})
-              if( boardData.boards[currentBoard].action ) { 
-
-                if (stringContainsForeign(boardData.boards[currentBoard].action)) {
-                  doc.font('fallback')
-                } else {
-                  doc.font('italic')
+            if (layout == 'table') {
+              textOffset = 0
+              doc.text('[Dialogue] '+boardData.boards[currentBoard].dialogue, x+imgSize[0]+offset,y+textOffset, {width: tableColWidth[3], align: 'left'})
+              textOffset += doc.heightOfString('[Dialogue] '+boardData.boards[currentBoard].dialogue, {width: tableColWidth[3], align: 'left'})
+            } else {
+              if (shrinkedImg) {
+                let metaHeight = doc.heightOfString(boardData.boards[currentBoard].dialogue, {width: imgSize[0], align: 'center'})
+                if( boardData.boards[currentBoard].action ) { 
+  
+                  if (stringContainsForeign(boardData.boards[currentBoard].action)) {
+                    doc.font('fallback')
+                  } else {
+                    doc.font('italic')
+                  }
+                  metaHeight += doc.heightOfString(boardData.boards[currentBoard].action, {width: imgSize[0], align: 'left'})
+                  
+                  if (stringContainsForeign(boardData.boards[currentBoard].dialogue)) {
+                    doc.font('fallback')
+                  } else {
+                    doc.font('bold')
+                  }
                 }
-                metaHeight += doc.heightOfString(boardData.boards[currentBoard].action, {width: imgSize[0], align: 'left'})
-                
-                if (stringContainsForeign(boardData.boards[currentBoard].dialogue)) {
-                  doc.font('fallback')
-                } else {
-                  doc.font('bold')
-                }
+                metaHeight += (boardData.boards[currentBoard].action) ? 17 : 10;
+                imgAligned = textHeight >= metaHeight
               }
-              metaHeight += (boardData.boards[currentBoard].action) ? 17 : 10;
-              imgAligned = textHeight >= metaHeight
-            }
 
-            
-            doc.text(boardData.boards[currentBoard].dialogue, x+(imgAligned ? offset : 0),y+imgSize[1]+textOffset, {width: imgAligned ? imgSize[0] : boxSize[0], align: 'center'})
-            textOffset += doc.heightOfString(boardData.boards[currentBoard].dialogue, {width: imgAligned ? imgSize[0] : boxSize[0], align: 'center'})
+              doc.text(boardData.boards[currentBoard].dialogue, x+(imgAligned ? offset : 0),y+imgSize[1]+textOffset, {width: imgAligned ? imgSize[0] : boxSize[0], align: 'center'})
+              textOffset += doc.heightOfString(boardData.boards[currentBoard].dialogue, {width: imgAligned ? imgSize[0] : boxSize[0], align: 'center'})
+            }
 
             if( boardData.boards[currentBoard].action) {
               textOffset += 7
@@ -301,12 +318,17 @@ let tableHeaderSize = 25
               doc.font('italic')
             }
 
-            if (shrinkedImg && !boardData.boards[currentBoard].dialogue) {
-              imgAligned = (textHeight > (doc.heightOfString(boardData.boards[currentBoard].action, {width: imgSize[0], align: 'left'}) + 5))
-            }
+            if (layout == 'table') {
+              doc.text('[Action] '+boardData.boards[currentBoard].action, x+imgSize[0]+offset,y+textOffset, {width: tableColWidth[3], align: 'left'})
+              textOffset += doc.heightOfString('[Action] '+boardData.boards[currentBoard].action, {width: tableColWidth[3], align: 'left'})
+            } else {
+              if (shrinkedImg && !boardData.boards[currentBoard].dialogue) {
+                imgAligned = (textHeight > (doc.heightOfString(boardData.boards[currentBoard].action, {width: imgSize[0], align: 'left'}) + 5))
+              }
 
-            doc.text(boardData.boards[currentBoard].action, x+(imgAligned ? offset : 0),y+imgSize[1]+textOffset, {width: imgAligned ? imgSize[0] : boxSize[0], align: 'left'})
-            textOffset += doc.heightOfString(boardData.boards[currentBoard].action, {width: imgAligned ? imgSize[0] : boxSize[0], align: 'left'})
+              doc.text(boardData.boards[currentBoard].action, x+(imgAligned ? offset : 0),y+imgSize[1]+textOffset, {width: imgAligned ? imgSize[0] : boxSize[0], align: 'left'})
+              textOffset += doc.heightOfString(boardData.boards[currentBoard].action, {width: imgAligned ? imgSize[0] : boxSize[0], align: 'left'})
+            }
           }
           currentBoard++
         }
