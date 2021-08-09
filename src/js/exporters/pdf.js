@@ -52,9 +52,12 @@ const generatePDF = (paperSize, layout='table', rows, cols, spacing, boardData, 
   doc.registerFont('bold', path.join(__dirname, '..', '..', 'fonts', 'thicccboi', 'THICCCBOI-Bold.ttf'))
   doc.registerFont('fallback', path.join(__dirname, '..', '..', 'fonts', 'unicore.ttf'))
 
+let tableHeaderSize = 25
+
   if (layout == 'table') {
     cols = 1
     spacing = 0
+    headerHeight += tableHeaderSize
   }
 
 
@@ -154,6 +157,65 @@ const generatePDF = (paperSize, layout='table', rows, cols, spacing, boardData, 
     doc.font('thin')
     doc.fontSize(6)
 
+    let x = 0
+    let y = 0
+    let tableHeader
+    let tableColWidth
+    let offset = (boxSize[0] - imgSize[0]) / 2
+
+    if (layout == 'table') {
+      x = margin[0]
+      y = margin[1] + headerHeight - tableHeaderSize
+      tableHeader = ['C', 'T', 'Board', 'Note']
+      tableColWidth = [
+        tableHeaderSize,
+        tableHeaderSize,
+        imgSize[0],
+        documentSize[docwidthIdx] - margin[0] - margin[2] - imgSize[0] - 2 * tableHeaderSize
+      ]
+      offset = 2 * tableHeaderSize
+
+      doc.fontSize(12)
+      doc.text(tableHeader[0], x, y, {align: 'left'})
+      doc.rect(x, y , tableColWidth[0], tableHeaderSize)
+        .lineWidth(.5).stroke()
+
+      x += tableColWidth[0]
+      doc.text(tableHeader[1], x, y, {align: 'left'})
+      doc.rect(x, y , tableColWidth[1], tableHeaderSize)
+        .lineWidth(.5).stroke()
+
+      x += tableColWidth[1]
+      doc.text(tableHeader[2], x, y, {align: 'left'})
+      doc.rect(x, y , tableColWidth[2], tableHeaderSize)
+        .lineWidth(.5).stroke()
+
+      x += tableColWidth[2]
+      doc.text(tableHeader[3], x, y, {align: 'left'})
+      doc.rect(x, y , tableColWidth[3], tableHeaderSize)
+        .lineWidth(.5).stroke()
+
+      x = margin[0]
+      y = margin[1] + headerHeight
+
+      doc.rect(x, y , tableColWidth[0], boxSize[1] * boxesDim[1])
+        .lineWidth(.5).stroke()
+      
+      x += tableColWidth[0]
+      doc.rect(x, y , tableColWidth[1], boxSize[1] * boxesDim[1])
+        .lineWidth(.5).stroke()
+
+      x += tableColWidth[1]
+      for (var iy = 0; iy < boxesDim[1]; iy++) {
+        doc.rect(x, y + iy * boxSize[1] , tableColWidth[2], boxSize[1])
+          .lineWidth(1).stroke()
+      }
+
+      x += tableColWidth[2]
+      doc.rect(x, y , tableColWidth[3], boxSize[1] * boxesDim[1])
+        .lineWidth(.5).stroke()
+    }
+
     let currentBox = 0
 
     for (var iy = 0; iy < boxesDim[1]; iy++) {
@@ -161,20 +223,19 @@ const generatePDF = (paperSize, layout='table', rows, cols, spacing, boardData, 
         if (currentBoard < boardData.boards.length) {
 
           currentBox++
-          let x = margin[0]+(ix*boxSize[0])+(ix*spacing)
-          let y = margin[1]+(iy*boxSize[1])+((iy+1)*spacing)+headerHeight
-          let offset = (boxSize[0]-imgSize[0])/2
+          x = margin[0]+(ix*boxSize[0])+(ix*spacing)
+          y = margin[1]+(iy*boxSize[1])+((iy+1)*spacing)+headerHeight
 
           let imagefilename = path.join(app.getPath('temp'), `board-` + currentBoard + '.jpg')
 
           doc.image(imagefilename, x+offset,y, {width: imgSize[0]})
 
           doc.rect(x+offset,y,imgSize[0],imgSize[1])
-          doc.lineWidth(.1).stroke()
+            .lineWidth(1).stroke()
 
-          if (boardData.boards[currentBoard].newShot) {
+          if (boardData.boards[currentBoard].newShot && layout != 'table') {
             doc.rect(x+offset,y,0,imgSize[1])
-            doc.lineWidth(2).stroke()
+              .lineWidth(2).stroke()
             doc.fontSize(6)
             doc.font('bold')
           } else {
