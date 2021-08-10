@@ -160,39 +160,38 @@ const generatePDF = (paperSize, layout='table', rows, cols, spacing, boardData, 
 
     let x = 0
     let y = 0
-    let tableHeader
-    let tableColWidth
+    let tableHeader = [0, 0, 0, 0]
+    let tableColWidth = [0, 0, 0, 0]
+    let tableTextOffset = 6
     let offset = (boxSize[0] - imgSize[0]) / 2
 
     if (layout == 'table') {
       x = margin[0]
       y = margin[1] + headerHeight - tableHeaderSize
       tableHeader = ['C', 'T', 'Board', 'Note']
-      tableColWidth = [
-        tableHeaderSize,
-        tableHeaderSize,
-        imgSize[0],
-        documentSize[docwidthIdx] - margin[0] - margin[2] - imgSize[0] - 2 * tableHeaderSize
-      ]
-      offset = 2 * tableHeaderSize
+      tableColWidth[0] = 25
+      tableColWidth[1] = 30
+      tableColWidth[2] = imgSize[0]
+      tableColWidth[3] = documentSize[docwidthIdx] - margin[0] - margin[2] - tableColWidth[0] - tableColWidth[1] - tableColWidth[2]
+      offset = tableColWidth[0] + tableColWidth[1]
 
       doc.fontSize(12)
-      doc.text(tableHeader[0], x, y, {align: 'left'})
+      doc.text(tableHeader[0], x, y + tableTextOffset, {width: tableColWidth[0], align: 'center'})
       doc.rect(x, y , tableColWidth[0], tableHeaderSize)
         .lineWidth(.5).stroke()
 
       x += tableColWidth[0]
-      doc.text(tableHeader[1], x, y, {align: 'left'})
+      doc.text(tableHeader[1], x, y + tableTextOffset, {width: tableColWidth[1], align: 'center'})
       doc.rect(x, y , tableColWidth[1], tableHeaderSize)
         .lineWidth(.5).stroke()
 
       x += tableColWidth[1]
-      doc.text(tableHeader[2], x, y, {align: 'left'})
+      doc.text(tableHeader[2], x, y + tableTextOffset, {width: tableColWidth[2], align: 'center'})
       doc.rect(x, y , tableColWidth[2], tableHeaderSize)
         .lineWidth(.5).stroke()
 
       x += tableColWidth[2]
-      doc.text(tableHeader[3], x, y, {align: 'left'})
+      doc.text(tableHeader[3], x, y + tableTextOffset, {width: tableColWidth[3], align: 'center'})
       doc.rect(x, y , tableColWidth[3], tableHeaderSize)
         .lineWidth(.5).stroke()
 
@@ -231,40 +230,46 @@ const generatePDF = (paperSize, layout='table', rows, cols, spacing, boardData, 
 
           doc.image(imagefilename, x+offset,y, {width: imgSize[0]})
 
-          doc.rect(x+offset,y,imgSize[0],imgSize[1])
-            .lineWidth(1).stroke()
-
-          if (boardData.boards[currentBoard].newShot && layout != 'table') {
-            doc.rect(x+offset,y,0,imgSize[1])
-              .lineWidth(2).stroke()
-            doc.fontSize(6)
-            doc.font('bold')
-          } else {
-            doc.fontSize(6)
-            doc.font('thin')
-          }
-
           if (layout == 'table') {
+            doc.rect(x+offset,y,imgSize[0],imgSize[1])
+              .lineWidth(1).stroke()
+
             if (boardData.boards[currentBoard].newShot) {
-              doc.text(parseInt(boardData.boards[currentBoard].shot), x, y, {width: tableHeaderSize, align: 'left'})
+              doc.fontSize(10)
+              doc.font('thin')
+              doc.text(parseInt(boardData.boards[currentBoard].shot), x, y + tableTextOffset, {width: tableColWidth[0], align: 'center'})
             }
+
+            doc.fontSize(10)
+            doc.font('thin')
+            doc.text(util.msecsToS(boardModel.boardDuration(boardData, boardData.boards[currentBoard]), 1), x+tableColWidth[0], y + tableTextOffset, {width: tableColWidth[1], align: 'center'})
+
+            doc.fontSize(10)
           } else {
+            doc.rect(x+offset,y,imgSize[0],imgSize[1])
+              .lineWidth(.5).stroke()
+
+            if (boardData.boards[currentBoard].newShot) {
+              doc.rect(x+offset,y,0,imgSize[1])
+                .lineWidth(1).stroke()
+              doc.fontSize(6)
+              doc.font('bold')
+            } else {
+              doc.fontSize(6)
+              doc.font('thin')
+            }
+
             doc.text(boardData.boards[currentBoard].shot, x+offset, y-8, {width: 40, align: 'left'})
-          }
 
-          doc.font('thin')
-          doc.fontSize(4)
-
-          if (layout == 'table') {
-            doc.text(util.msToTime(boardModel.boardDuration(boardData, boardData.boards[currentBoard])), x+tableHeaderSize, y, {width: tableHeaderSize, align: 'left'})
-          } else {
+            doc.font('thin')
+            doc.fontSize(4)
             doc.text(util.msToTime(boardData.boards[currentBoard].time), x+offset+imgSize[0]-40, y-6, {width: 40, align: 'right'})
+
+            doc.fontSize(7)
           }
 
           let textOffset = ( boardData.boards[currentBoard].action || boardData.boards[currentBoard].dialogue ) ? 5 : 0
           let imgAligned = false
-
-          doc.fontSize(7)
 
           console.log(stringContainsForeign("sup"))
 
@@ -277,9 +282,9 @@ const generatePDF = (paperSize, layout='table', rows, cols, spacing, boardData, 
             }
 
             if (layout == 'table') {
-              textOffset = 0
-              doc.text('[Dialogue] '+boardData.boards[currentBoard].dialogue, x+imgSize[0]+offset,y+textOffset, {width: tableColWidth[3], align: 'left'})
-              textOffset += doc.heightOfString('[Dialogue] '+boardData.boards[currentBoard].dialogue, {width: tableColWidth[3], align: 'left'})
+              textOffset = tableTextOffset
+              doc.text('[Dialogue]\n'+boardData.boards[currentBoard].dialogue, x+imgSize[0]+offset+tableTextOffset,y+textOffset, {width: tableColWidth[3] - 2 * tableTextOffset, align: 'left'})
+              textOffset += doc.heightOfString('[Dialogue]\n'+boardData.boards[currentBoard].dialogue, {width: tableColWidth[3] - 2 * tableTextOffset, align: 'left'})
             } else {
               if (shrinkedImg) {
                 let metaHeight = doc.heightOfString(boardData.boards[currentBoard].dialogue, {width: imgSize[0], align: 'center'})
@@ -319,8 +324,8 @@ const generatePDF = (paperSize, layout='table', rows, cols, spacing, boardData, 
             }
 
             if (layout == 'table') {
-              doc.text('[Action] '+boardData.boards[currentBoard].action, x+imgSize[0]+offset,y+textOffset, {width: tableColWidth[3], align: 'left'})
-              textOffset += doc.heightOfString('[Action] '+boardData.boards[currentBoard].action, {width: tableColWidth[3], align: 'left'})
+              doc.text('[Action]\n'+boardData.boards[currentBoard].action, x+imgSize[0]+offset+tableTextOffset,y+textOffset, {width: tableColWidth[3] - 2 * tableTextOffset, align: 'left'})
+              textOffset += doc.heightOfString('[Action]\n'+boardData.boards[currentBoard].action, {width: tableColWidth[3] - 2 * tableTextOffset, align: 'left'})
             } else {
               if (shrinkedImg && !boardData.boards[currentBoard].dialogue) {
                 imgAligned = (textHeight > (doc.heightOfString(boardData.boards[currentBoard].action, {width: imgSize[0], align: 'left'}) + 5))
