@@ -114,9 +114,6 @@ const updateHTML = () => {
 }
 //#endregion
 
-const msecsToS = value => (value / 1000).toFixed(3)
-const sToMsecs = value => Math.round(value * 1000)
-
 const onChange = (name, event) => {
   let el = event.target
 
@@ -124,7 +121,7 @@ const onChange = (name, event) => {
     if (el.value === '') {
       prefsModule.set(name, 2000, true)
     } else {
-      prefsModule.set(name, sToMsecs(el.value), true)
+      prefsModule.set(name, util.sToMsecs(el.value), true)
     }
   } else if (el.type == 'checkbox') {
     prefsModule.set(name, el.checked, true)
@@ -220,7 +217,7 @@ const render = () => {
     } else if (el.type == 'number') {
       el.value = prefs[el.name]
       if (el.name === 'defaultBoardTiming') {
-        el.value = msecsToS(el.value)
+        el.value = util.msecsToS(el.value)
       }
     } else if (el.type == 'range') {
       el.value = prefs[el.name]
