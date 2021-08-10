@@ -1,6 +1,7 @@
 const fs = require('fs')
 const path = require('path')
 const util = require('../utils/index')
+const boardModel = require('../models/board')
 const pdfDocument = require('pdfkit')
 const moment = require('moment')
 const app = require('electron').remote.app
@@ -16,7 +17,7 @@ const app = require('electron').remote.app
 */
 
 
-const generatePDF = (paperSize, layout='landscape', rows, cols, spacing, boardData, basenameWithoutExt, filepath, shouldWatermark = false, watermarkImagePath = undefined, watermarkDimensions = []) => {
+const generatePDF = (paperSize, layout='table', rows, cols, spacing, boardData, basenameWithoutExt, filepath, shouldWatermark = false, watermarkImagePath = undefined, watermarkDimensions = []) => {
 
   let stringContainsForeign = (testString) => {
     let regexForeign = /[^AÁĂÂÄÀĀĄÅÃÆBCĆČÇĊDÐĎĐEÉĚÊËĖÈĒĘFGĞĢĠHĦIÍÎÏİÌĪĮJKĶLĹĽĻŁMNŃŇŅŊÑOÓÔÖÒŐŌØÕŒPÞQRŔŘŖSŚŠŞȘTŦŤŢȚUÚÛÜÙŰŪŲŮVWẂŴẄẀXYÝŶŸỲZŹŽŻaáăâäàāąåãæbcćčçċdðďđeéěêëėèēęfgğģġhħiıíîïìīįjkķlĺľļłmnńňņŋñoóôöòőōøõœpþqrŕřŗsśšşșßtŧťţțuúûüùűūųůvwẃŵẅẁxyýŷÿỳzźžż0123456789.,\/#!$%\^&\*;:{}=\-_`~()\s\?¿—–-€₪¢₡¤$ƒ₣₤₧₨£¥⋅+−×÷=≠><≥≤±≈~¬∞∫Ω∆∏∑√µ∂%‰⊳⊲↑→↓←●◊■▲▼★☐♦✓@&¶§©®℗™°|¦†ℓ‡№℮^⌘\'\"„“”‘‛’´˘ˇ¸ˆ¨˙`˝¯˛˚˜]/;
@@ -26,27 +27,39 @@ const generatePDF = (paperSize, layout='landscape', rows, cols, spacing, boardDa
 
   let headerHeight = 40
   let documentSize
-  let docwidthIdx = 1
-  let docheightIdx = 0
+  let docwidthIdx = 0
+  let docheightIdx = 1
   if (paperSize == 'LTR') {
     documentSize = [8.5*72,11*72]
   } else {
     documentSize = [595,842]
   }
-  if (layout != 'landscape') {
-    docwidthIdx = 0
-    docheightIdx = 1
+  if (layout == 'landscape') {
+    docwidthIdx = 1
+    docheightIdx = 0
   }
   aspectRatio = boardData.aspectRatio
   // if (!sceneNumber) sceneNumber = 0
   let margin = [22, 22, 22, 40]
 
-  let doc = new pdfDocument({size: documentSize, layout: layout, margin: 0})
+  let doc = new pdfDocument({
+    size: documentSize,
+    layout: layout == 'landscape' ? 'landscape' : 'portrait',
+    margin: 0
+  })
 
   doc.registerFont('thin', path.join(__dirname, '..', '..', 'fonts', 'thicccboi', 'THICCCBOI-Thin.ttf'))
   doc.registerFont('italic', path.join(__dirname, '..', '..', 'fonts', 'thicccboi', 'THICCCBOI-Regular.ttf'))
   doc.registerFont('bold', path.join(__dirname, '..', '..', 'fonts', 'thicccboi', 'THICCCBOI-Bold.ttf'))
   doc.registerFont('fallback', path.join(__dirname, '..', '..', 'fonts', 'unicore.ttf'))
+
+  let tableHeaderSize = 25
+
+  if (layout == 'table') {
+    cols = 1
+    spacing = 0
+    headerHeight += tableHeaderSize
+  }
 
 
   let stream = doc.pipe(fs.createWriteStream(filepath))
@@ -78,7 +91,7 @@ const generatePDF = (paperSize, layout='landscape', rows, cols, spacing, boardDa
 
   let textHeight = 0
 
-  if (index > -1) {
+  if (index > -1 && layout != 'table') {
     doc.fontSize(7)
     if( boardData.boards[index].dialogue ) {
       doc.font('bold')
@@ -97,7 +110,7 @@ const generatePDF = (paperSize, layout='landscape', rows, cols, spacing, boardDa
   let imgSize
   let shrinkedImg = false
 
-  if((boxSize[0]/(boxSize[1]-textHeight)) <= aspectRatio) {
+  if((boxSize[0]/(boxSize[1]-textHeight)) < aspectRatio + 0.005) {
     imgSize = [boxSize[0], boxSize[0]/aspectRatio]
   } else {
     imgSize = [(boxSize[1]-textHeight)*aspectRatio, (boxSize[1]-textHeight)]
@@ -120,7 +133,7 @@ const generatePDF = (paperSize, layout='landscape', rows, cols, spacing, boardDa
     return best_numer + ' : ' + best_denom;
   }
 
-  let displayAspect = find_rational(aspectRatio)
+  let displayAspect = aspectRatio + ' : 1'
 
   for (var i = 0; i < pages; i++) {
     if (i != 0) {
@@ -145,6 +158,64 @@ const generatePDF = (paperSize, layout='landscape', rows, cols, spacing, boardDa
     doc.font('thin')
     doc.fontSize(6)
 
+    let x = 0
+    let y = 0
+    let tableHeader = [0, 0, 0, 0]
+    let tableColWidth = [0, 0, 0, 0]
+    let tableTextOffset = 6
+    let offset = (boxSize[0] - imgSize[0]) / 2
+
+    if (layout == 'table') {
+      x = margin[0]
+      y = margin[1] + headerHeight - tableHeaderSize
+      tableHeader = ['C', 'T', 'Board', 'Note']
+      tableColWidth[0] = 25
+      tableColWidth[1] = 30
+      tableColWidth[2] = imgSize[0]
+      tableColWidth[3] = documentSize[docwidthIdx] - margin[0] - margin[2] - tableColWidth[0] - tableColWidth[1] - tableColWidth[2]
+      offset = tableColWidth[0] + tableColWidth[1]
+
+      doc.fontSize(12)
+      doc.text(tableHeader[0], x, y + tableTextOffset, {width: tableColWidth[0], align: 'center'})
+      doc.rect(x, y , tableColWidth[0], tableHeaderSize)
+        .lineWidth(.5).stroke()
+
+      x += tableColWidth[0]
+      doc.text(tableHeader[1], x, y + tableTextOffset, {width: tableColWidth[1], align: 'center'})
+      doc.rect(x, y , tableColWidth[1], tableHeaderSize)
+        .lineWidth(.5).stroke()
+
+      x += tableColWidth[1]
+      doc.text(tableHeader[2], x, y + tableTextOffset, {width: tableColWidth[2], align: 'center'})
+      doc.rect(x, y , tableColWidth[2], tableHeaderSize)
+        .lineWidth(.5).stroke()
+
+      x += tableColWidth[2]
+      doc.text(tableHeader[3], x, y + tableTextOffset, {width: tableColWidth[3], align: 'center'})
+      doc.rect(x, y , tableColWidth[3], tableHeaderSize)
+        .lineWidth(.5).stroke()
+
+      x = margin[0]
+      y = margin[1] + headerHeight
+
+      doc.rect(x, y , tableColWidth[0], boxSize[1] * boxesDim[1])
+        .lineWidth(.5).stroke()
+      
+      x += tableColWidth[0]
+      doc.rect(x, y , tableColWidth[1], boxSize[1] * boxesDim[1])
+        .lineWidth(.5).stroke()
+
+      x += tableColWidth[1]
+      for (var iy = 0; iy < boxesDim[1]; iy++) {
+        doc.rect(x, y + iy * boxSize[1] , tableColWidth[2], boxSize[1])
+          .lineWidth(1).stroke()
+      }
+
+      x += tableColWidth[2]
+      doc.rect(x, y , tableColWidth[3], boxSize[1] * boxesDim[1])
+        .lineWidth(.5).stroke()
+    }
+
     let currentBox = 0
 
     for (var iy = 0; iy < boxesDim[1]; iy++) {
@@ -152,37 +223,53 @@ const generatePDF = (paperSize, layout='landscape', rows, cols, spacing, boardDa
         if (currentBoard < boardData.boards.length) {
 
           currentBox++
-          let x = margin[0]+(ix*boxSize[0])+(ix*spacing)
-          let y = margin[1]+(iy*boxSize[1])+((iy+1)*spacing)+headerHeight
-          let offset = (boxSize[0]-imgSize[0])/2
+          x = margin[0]+(ix*boxSize[0])+(ix*spacing)
+          y = margin[1]+(iy*boxSize[1])+((iy+1)*spacing)+headerHeight
 
           let imagefilename = path.join(app.getPath('temp'), `board-` + currentBoard + '.jpg')
 
           doc.image(imagefilename, x+offset,y, {width: imgSize[0]})
 
-          doc.rect(x+offset,y,imgSize[0],imgSize[1])
-          doc.lineWidth(.1).stroke()
+          if (layout == 'table') {
+            doc.rect(x+offset,y,imgSize[0],imgSize[1])
+              .lineWidth(1).stroke()
 
-          if (boardData.boards[currentBoard].newShot) {
-            doc.rect(x+offset,y,0,imgSize[1])
-            doc.lineWidth(2).stroke()
-            doc.fontSize(6)
-            doc.font('bold')
-          } else {
-            doc.fontSize(6)
+            if (boardData.boards[currentBoard].newShot) {
+              doc.fontSize(10)
+              doc.font('thin')
+              doc.text(parseInt(boardData.boards[currentBoard].shot), x, y + tableTextOffset, {width: tableColWidth[0], align: 'center'})
+            }
+
+            doc.fontSize(10)
             doc.font('thin')
+            doc.text(util.msecsToS(boardModel.boardDuration(boardData, boardData.boards[currentBoard]), 1), x+tableColWidth[0], y + tableTextOffset, {width: tableColWidth[1], align: 'center'})
+
+            doc.fontSize(10)
+          } else {
+            doc.rect(x+offset,y,imgSize[0],imgSize[1])
+              .lineWidth(.5).stroke()
+
+            if (boardData.boards[currentBoard].newShot) {
+              doc.rect(x+offset,y,0,imgSize[1])
+                .lineWidth(1).stroke()
+              doc.fontSize(6)
+              doc.font('bold')
+            } else {
+              doc.fontSize(6)
+              doc.font('thin')
+            }
+
+            doc.text(boardData.boards[currentBoard].shot, x+offset, y-8, {width: 40, align: 'left'})
+
+            doc.font('thin')
+            doc.fontSize(4)
+            doc.text(util.msToTime(boardData.boards[currentBoard].time), x+offset+imgSize[0]-40, y-6, {width: 40, align: 'right'})
+
+            doc.fontSize(7)
           }
 
-          doc.text(boardData.boards[currentBoard].shot, x+offset, y-8, {width: 40, align: 'left'})
-
-          doc.font('thin')
-          doc.fontSize(4)
-          doc.text(util.msToTime(boardData.boards[currentBoard].time), x+offset+imgSize[0]-40, y-6, {width: 40, align: 'right'})
-
-          let textOffset = ( boardData.boards[currentBoard].action || boardData.boards[currentBoard].dialogue ) ? 5 : 0
+          let textOffset = 0
           let imgAligned = false
-
-          doc.fontSize(7)
 
           console.log(stringContainsForeign("sup"))
 
@@ -194,30 +281,36 @@ const generatePDF = (paperSize, layout='landscape', rows, cols, spacing, boardDa
               doc.font('bold')
             }
 
-            if (shrinkedImg) {
-              let metaHeight = doc.heightOfString(boardData.boards[currentBoard].dialogue, {width: imgSize[0], align: 'center'})
-              if( boardData.boards[currentBoard].action ) { 
+            if (layout == 'table') {
+              doc.text('[Dialogue]\n'+boardData.boards[currentBoard].dialogue, x+imgSize[0]+offset+tableTextOffset,y+textOffset, {width: tableColWidth[3] - 2 * tableTextOffset, align: 'left'})
+              textOffset += doc.heightOfString('[Dialogue]\n'+boardData.boards[currentBoard].dialogue, {width: tableColWidth[3] - 2 * tableTextOffset, align: 'left'})
+            } else {
+              textOffset = ( boardData.boards[currentBoard].action || boardData.boards[currentBoard].dialogue ) ? 5 : 0
 
-                if (stringContainsForeign(boardData.boards[currentBoard].action)) {
-                  doc.font('fallback')
-                } else {
-                  doc.font('italic')
+              if (shrinkedImg) {
+                let metaHeight = doc.heightOfString(boardData.boards[currentBoard].dialogue, {width: imgSize[0], align: 'center'})
+                if( boardData.boards[currentBoard].action ) { 
+  
+                  if (stringContainsForeign(boardData.boards[currentBoard].action)) {
+                    doc.font('fallback')
+                  } else {
+                    doc.font('italic')
+                  }
+                  metaHeight += doc.heightOfString(boardData.boards[currentBoard].action, {width: imgSize[0], align: 'left'})
+                  
+                  if (stringContainsForeign(boardData.boards[currentBoard].dialogue)) {
+                    doc.font('fallback')
+                  } else {
+                    doc.font('bold')
+                  }
                 }
-                metaHeight += doc.heightOfString(boardData.boards[currentBoard].action, {width: imgSize[0], align: 'left'})
-                
-                if (stringContainsForeign(boardData.boards[currentBoard].dialogue)) {
-                  doc.font('fallback')
-                } else {
-                  doc.font('bold')
-                }
+                metaHeight += (boardData.boards[currentBoard].action) ? 17 : 10;
+                imgAligned = textHeight >= metaHeight
               }
-              metaHeight += (boardData.boards[currentBoard].action) ? 17 : 10;
-              imgAligned = textHeight >= metaHeight
-            }
 
-            
-            doc.text(boardData.boards[currentBoard].dialogue, x+(imgAligned ? offset : 0),y+imgSize[1]+textOffset, {width: imgAligned ? imgSize[0] : boxSize[0], align: 'center'})
-            textOffset += doc.heightOfString(boardData.boards[currentBoard].dialogue, {width: imgAligned ? imgSize[0] : boxSize[0], align: 'center'})
+              doc.text(boardData.boards[currentBoard].dialogue, x+(imgAligned ? offset : 0),y+imgSize[1]+textOffset, {width: imgAligned ? imgSize[0] : boxSize[0], align: 'center'})
+              textOffset += doc.heightOfString(boardData.boards[currentBoard].dialogue, {width: imgAligned ? imgSize[0] : boxSize[0], align: 'center'})
+            }
 
             if( boardData.boards[currentBoard].action) {
               textOffset += 7
@@ -231,12 +324,17 @@ const generatePDF = (paperSize, layout='landscape', rows, cols, spacing, boardDa
               doc.font('italic')
             }
 
-            if (shrinkedImg && !boardData.boards[currentBoard].dialogue) {
-              imgAligned = (textHeight > (doc.heightOfString(boardData.boards[currentBoard].action, {width: imgSize[0], align: 'left'}) + 5))
-            }
+            if (layout == 'table') {
+              doc.text('[Action]\n'+boardData.boards[currentBoard].action, x+imgSize[0]+offset+tableTextOffset,y+textOffset, {width: tableColWidth[3] - 2 * tableTextOffset, align: 'left'})
+              textOffset += doc.heightOfString('[Action]\n'+boardData.boards[currentBoard].action, {width: tableColWidth[3] - 2 * tableTextOffset, align: 'left'})
+            } else {
+              if (shrinkedImg && !boardData.boards[currentBoard].dialogue) {
+                imgAligned = (textHeight > (doc.heightOfString(boardData.boards[currentBoard].action, {width: imgSize[0], align: 'left'}) + 5))
+              }
 
-            doc.text(boardData.boards[currentBoard].action, x+(imgAligned ? offset : 0),y+imgSize[1]+textOffset, {width: imgAligned ? imgSize[0] : boxSize[0], align: 'left'})
-            textOffset += doc.heightOfString(boardData.boards[currentBoard].action, {width: imgAligned ? imgSize[0] : boxSize[0], align: 'left'})
+              doc.text(boardData.boards[currentBoard].action, x+(imgAligned ? offset : 0),y+imgSize[1]+textOffset, {width: imgAligned ? imgSize[0] : boxSize[0], align: 'left'})
+              textOffset += doc.heightOfString(boardData.boards[currentBoard].action, {width: imgAligned ? imgSize[0] : boxSize[0], align: 'left'})
+            }
           }
           currentBoard++
         }

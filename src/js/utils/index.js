@@ -22,6 +22,13 @@ let msToTime = (s)=> {
   }
 }
 
+let msecsToFrames = (fps, value) => Math.round(value / 1000 * fps)
+let framesToMsecs = (fps, value) => Math.round(value / fps * 1000)
+let msecsToS = (value, precision=3) => (value / 1000).toFixed(precision)
+let sToMsecs = value => Math.round(value * 1000)
+let framesToS = (fps, value, precision=3) => (value / fps).toFixed(precision)
+let sToFrames = (fps, value) => Math.round(value * fps)
+
 let uidGen = (chars)=> {
   return ("00000" + (Math.random()*Math.pow(36,chars) << 0).toString(36)).slice(-chars).toUpperCase()
 }
@@ -223,6 +230,12 @@ const numberToColor = number =>
 
 module.exports = {
   msToTime,
+  msecsToFrames,
+  framesToMsecs,
+  msecsToS,
+  sToMsecs,
+  framesToS,
+  sToFrames,
   uidGen,
   uuid4,
   durationOfWords,

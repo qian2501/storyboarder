@@ -325,13 +325,6 @@ let scrollPoint
 // CAF cancel tokens for async functions
 let cancelTokens = {}
 
-const msecsToFrames = value => Math.round(value / 1000 * boardData.fps)
-const framesToMsecs = value => Math.round(value / boardData.fps * 1000)
-const msecsToS = value => (value / 1000).toFixed(3)
-const sToMsecs = value => Math.round(value * 1000)
-const framesToS = value => (value / boardData.fps).toFixed(3)
-const sToFrames = value => Math.round(value * boardData.fps)
-
 // via https://stackoverflow.com/a/41115086
 const serial = funcs =>
     funcs.reduce((promise, func) =>
@@ -1077,7 +1070,7 @@ const loadBoardUI = async () => {
           // which will render as the scene's default duration
           let newDuration = isNaN(parseFloat(e.target.value))
             ? boardData.defaultBoardTiming
-            : sToMsecs(parseFloat(e.target.value))
+            : util.sToMsecs(parseFloat(e.target.value))
 
           // set the new duration value
           for (let index of selections) {
@@ -1085,22 +1078,22 @@ const loadBoardUI = async () => {
           }
 
           // update the `frames` view
-          document.querySelector('input[name="frames"]').value = msecsToFrames(newDuration)
+          document.querySelector('input[name="frames"]').value = util.msecsToFrames(boardData.fps, newDuration)
 
           renderThumbnailDrawer()
           renderMarkerPosition()
           break
         case 'frames':
           let newFrames = isNaN(parseInt(e.target.value, 10))
-            ? msecsToFrames(boardData.defaultBoardTiming)
+            ? util.msecsToFrames(boardData.fps, boardData.defaultBoardTiming)
             : parseInt(e.target.value, 10)
 
           for (let index of selections) {
-            boardData.boards[index].duration = framesToMsecs(newFrames)
+            boardData.boards[index].duration = util.framesToMsecs(boardData.fps, newFrames)
           }
 
           // update the `duration` view
-          document.querySelector('input[name="duration"]').value = framesToS(newFrames)
+          document.querySelector('input[name="duration"]').value = util.framesToS(boardData.fps, newFrames)
 
           renderThumbnailDrawer()
           renderMarkerPosition()
@@ -3658,9 +3651,9 @@ let renderMetaData = () => {
       }
 
       document.querySelector('input[name="duration"]').value = !isNaN(boardData.boards[currentBoard].duration)
-        ? msecsToS(boardData.boards[currentBoard].duration)
+        ? util.msecsToS(boardData.boards[currentBoard].duration)
         : ''
-      document.querySelector('input[name="frames"]').value = msecsToFrames(boardData.boards[currentBoard].duration)
+      document.querySelector('input[name="frames"]').value = util.msecsToFrames(boardData.fps, boardData.boards[currentBoard].duration)
     } else {
       for (let input of editableInputs) {
         input.disabled = (input.name !== 'duration' && input.name !== 'frames')
@@ -3674,9 +3667,9 @@ let renderMetaData = () => {
         // unified
         let duration = uniqueDurations[0]
         document.querySelector('input[name="duration"]').value = !isNaN(duration)
-          ? msecsToS(duration)
+          ? util.msecsToS(duration)
           : ''
-        document.querySelector('input[name="frames"]').value = msecsToFrames(boardModel.boardDuration(boardData, boardData.boards[currentBoard].duration))
+        document.querySelector('input[name="frames"]').value = util.msecsToFrames(boardData.fps, boardModel.boardDuration(boardData, boardData.boards[currentBoard].duration))
       } else {
         document.querySelector('input[name="duration"]').value = null
         document.querySelector('input[name="frames"]').value = null

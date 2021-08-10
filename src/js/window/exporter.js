@@ -118,7 +118,7 @@ class Exporter {
         let exportsPath = ensureExportsPathExists(projectFileAbsolutePath)
         let filepath = _filepath ? _filepath : path.join(exportsPath, basenameWithoutExt + ' ' + moment().format('YYYY-MM-DD hh.mm.ss') + '.pdf')
         let paperSize = _paperSize ? _paperSize : 'LTR'
-        let paperOrientation = _paperOrientation ? _paperOrientation : "landscape"
+        let paperOrientation = _paperOrientation ? _paperOrientation : "table"
         let rows = _rows ? _rows : 3
         let cols = _cols ? _cols : 3
         let spacing = _spacing ? _spacing : 10
