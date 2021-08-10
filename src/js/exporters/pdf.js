@@ -268,7 +268,7 @@ const generatePDF = (paperSize, layout='table', rows, cols, spacing, boardData, 
             doc.fontSize(7)
           }
 
-          let textOffset = ( boardData.boards[currentBoard].action || boardData.boards[currentBoard].dialogue ) ? 5 : 0
+          let textOffset = 0
           let imgAligned = false
 
           console.log(stringContainsForeign("sup"))
@@ -282,10 +282,11 @@ const generatePDF = (paperSize, layout='table', rows, cols, spacing, boardData, 
             }
 
             if (layout == 'table') {
-              textOffset = tableTextOffset
               doc.text('[Dialogue]\n'+boardData.boards[currentBoard].dialogue, x+imgSize[0]+offset+tableTextOffset,y+textOffset, {width: tableColWidth[3] - 2 * tableTextOffset, align: 'left'})
               textOffset += doc.heightOfString('[Dialogue]\n'+boardData.boards[currentBoard].dialogue, {width: tableColWidth[3] - 2 * tableTextOffset, align: 'left'})
             } else {
+              textOffset = ( boardData.boards[currentBoard].action || boardData.boards[currentBoard].dialogue ) ? 5 : 0
+
               if (shrinkedImg) {
                 let metaHeight = doc.heightOfString(boardData.boards[currentBoard].dialogue, {width: imgSize[0], align: 'center'})
                 if( boardData.boards[currentBoard].action ) { 
