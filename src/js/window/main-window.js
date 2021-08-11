@@ -1537,37 +1537,20 @@ const loadBoardUI = async () => {
           'Draw in Storyboarder', // 1
           'Cancel' // 2
         ],
-        defaultId: 2
+        defaultId: 1
       })
       .then(({ response }) => {
         if (response === 0) {
           // Open in Photoshop
           openInEditor()
         } else if (response === 1) {
-          // Draw in Storyboarder
-          remote.dialog.showMessageBox({
-            type: 'question',
-            message: 'If you draw, Storyboarder will stop watching ' +
-                    'Photoshop for changes, and unlink the PSD from ' +
-                    'this board. Are you absolutely sure?',
-            buttons: [
-              'Unlink and Draw', // 0
-              'Cancel' // 1
-            ],
-            defaultId: 1
-          })
-          .then(({ response }) => {
-            if (response === 0) {
-              // Unlink and Draw
-              notifications.notify({ message: `Stopped watching\n${board.link}\nfor changes.` })
-              linkedFileManager.removeBoard(board)
-              delete board.link
-              markBoardFileDirty()
+          // Unlink and Draw
+          notifications.notify({ message: `Stopped watching\n${board.link}\nfor changes.` })
+          linkedFileManager.removeBoard(board)
+          delete board.link
+          markBoardFileDirty()
 
-              storyboarderSketchPane.setIsLocked(false)
-            }
-          })
-          .catch(err => log.error(err))
+          storyboarderSketchPane.setIsLocked(false)
         }
       })
       .catch(err => log.error(err))
