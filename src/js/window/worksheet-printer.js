@@ -46,10 +46,10 @@ class WorksheetPrinter extends EventEmitter {
 
     let doc = new pdfDocument({size: documentSize, layout: 'landscape', margin: 0})
 
-    doc.registerFont('thin', path.join(__dirname, '..', '..', 'fonts', 'thicccboi', 'THICCCBOI-Thin.ttf'))
-    doc.registerFont('light', path.join(__dirname, '..', '..', 'fonts', 'thicccboi', 'THICCCBOI-Light.ttf'))
-    doc.registerFont('regular', path.join(__dirname, '..', '..', 'fonts', 'thicccboi', 'THICCCBOI-Regular.ttf'))
-    doc.registerFont('bold', path.join(__dirname, '..', '..', 'fonts', 'thicccboi', 'THICCCBOI-Bold.ttf'))
+    doc.registerFont('thin', path.join(__dirname, '..', '..', 'fonts', 'NotoSans', 'NotoSansSC-Thin.otf'))
+    doc.registerFont('light', path.join(__dirname, '..', '..', 'fonts', 'NotoSans', 'NotoSansSC-Light.otf'))
+    doc.registerFont('regular', path.join(__dirname, '..', '..', 'fonts', 'NotoSans', 'NotoSansSC-Regular.otf'))
+    doc.registerFont('bold', path.join(__dirname, '..', '..', 'fonts', 'NotoSans', 'NotoSansSC-Bold.otf'))
 
     let stream = doc.pipe(fs.createWriteStream(path.join(app.getPath('temp'), 'worksheetoutput.pdf')))
 

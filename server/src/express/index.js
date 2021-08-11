@@ -76,9 +76,9 @@ export const App = async () => {
 
   // specifically serve the font from root,
   // so it will be cached by the browser across sessions, e.g.:
-  //   /fonts/thicccboi/THICCCBOI-Regular.woff2
+  //   /fonts/NotoSans/NotoSansSC-Regular.otf
   // although, due to XRStatic, this works, too:
-  //   /1234/fonts/thicccboi/THICCCBOI-Regular.woff2
+  //   /1234/fonts/NotoSans/NotoSansSC-Regular.otf
   app.use('/fonts', express.static(path.join(XRPath, 'fonts'), { index: false }))
 
   app.use('/:id', (...params) => {

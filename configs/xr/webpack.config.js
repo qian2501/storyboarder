@@ -62,7 +62,7 @@ module.exports = {
     new HtmlWebpackPlugin({template: './src/js/xr/src/index.html'}),
     new CopyPlugin({
       patterns: [
-        { from: 'src/fonts/thicccboi', to: 'fonts/thicccboi' }
+        { from: 'src/fonts/NotoSans', to: 'fonts/NotoSans' }
       ]
     })
   ]

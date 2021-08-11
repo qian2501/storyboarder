@@ -48,9 +48,9 @@ const generatePDF = (paperSize, layout='table', rows, cols, spacing, boardData, 
     margin: 0
   })
 
-  doc.registerFont('thin', path.join(__dirname, '..', '..', 'fonts', 'thicccboi', 'THICCCBOI-Thin.ttf'))
-  doc.registerFont('italic', path.join(__dirname, '..', '..', 'fonts', 'thicccboi', 'THICCCBOI-Regular.ttf'))
-  doc.registerFont('bold', path.join(__dirname, '..', '..', 'fonts', 'thicccboi', 'THICCCBOI-Bold.ttf'))
+  doc.registerFont('thin', path.join(__dirname, '..', '..', 'fonts', 'NotoSans', 'NotoSansSC-Thin.otf'))
+  doc.registerFont('regular', path.join(__dirname, '..', '..', 'fonts', 'NotoSans', 'NotoSansSC-Regular.otf'))
+  doc.registerFont('bold', path.join(__dirname, '..', '..', 'fonts', 'NotoSans', 'NotoSansSC-Bold.otf'))
   doc.registerFont('fallback', path.join(__dirname, '..', '..', 'fonts', 'unicore.ttf'))
 
   let tableHeaderSize = 25
@@ -98,7 +98,7 @@ const generatePDF = (paperSize, layout='table', rows, cols, spacing, boardData, 
       textHeight += doc.heightOfString(boardData.boards[index].dialogue, {width: boxSize[0], align: 'center'});
     }
     if( boardData.boards[index].action ) { 
-      doc.font('italic')
+      doc.font('regular')
       textHeight += doc.heightOfString(boardData.boards[index].action, {width: boxSize[0], align: 'left'});
     }
     textHeight += (boardData.boards[currentBoard].action) ? 17 : 10;
@@ -162,7 +162,7 @@ const generatePDF = (paperSize, layout='table', rows, cols, spacing, boardData, 
     let y = 0
     let tableHeader = [0, 0, 0, 0]
     let tableColWidth = [0, 0, 0, 0]
-    let tableTextOffset = 6
+    let tableTextOffset = 3
     let offset = (boxSize[0] - imgSize[0]) / 2
 
     if (layout == 'table') {
@@ -236,12 +236,12 @@ const generatePDF = (paperSize, layout='table', rows, cols, spacing, boardData, 
 
             if (boardData.boards[currentBoard].newShot) {
               doc.fontSize(10)
-              doc.font('thin')
+              doc.font('regular')
               doc.text(parseInt(boardData.boards[currentBoard].shot), x, y + tableTextOffset, {width: tableColWidth[0], align: 'center'})
             }
 
             doc.fontSize(10)
-            doc.font('thin')
+            doc.font('regular')
             doc.text(util.msecsToS(boardModel.boardDuration(boardData, boardData.boards[currentBoard]), 1), x+tableColWidth[0], y + tableTextOffset, {width: tableColWidth[1], align: 'center'})
 
             doc.fontSize(10)
@@ -275,17 +275,18 @@ const generatePDF = (paperSize, layout='table', rows, cols, spacing, boardData, 
 
           if (boardData.boards[currentBoard].dialogue) {
 
-            if (stringContainsForeign(boardData.boards[currentBoard].dialogue)) {
-              doc.font('fallback')
-            } else {
-              doc.font('bold')
-            }
-
             if (layout == 'table') {
+              doc.font('regular')
               doc.text('[Dialogue]\n'+boardData.boards[currentBoard].dialogue, x+imgSize[0]+offset+tableTextOffset,y+textOffset, {width: tableColWidth[3] - 2 * tableTextOffset, align: 'left'})
               textOffset += doc.heightOfString('[Dialogue]\n'+boardData.boards[currentBoard].dialogue, {width: tableColWidth[3] - 2 * tableTextOffset, align: 'left'})
             } else {
               textOffset = ( boardData.boards[currentBoard].action || boardData.boards[currentBoard].dialogue ) ? 5 : 0
+
+              if (stringContainsForeign(boardData.boards[currentBoard].dialogue)) {
+                doc.font('fallback')
+              } else {
+                doc.font('bold')
+              }
 
               if (shrinkedImg) {
                 let metaHeight = doc.heightOfString(boardData.boards[currentBoard].dialogue, {width: imgSize[0], align: 'center'})
@@ -294,7 +295,7 @@ const generatePDF = (paperSize, layout='table', rows, cols, spacing, boardData, 
                   if (stringContainsForeign(boardData.boards[currentBoard].action)) {
                     doc.font('fallback')
                   } else {
-                    doc.font('italic')
+                    doc.font('regular')
                   }
                   metaHeight += doc.heightOfString(boardData.boards[currentBoard].action, {width: imgSize[0], align: 'left'})
                   
@@ -318,16 +319,17 @@ const generatePDF = (paperSize, layout='table', rows, cols, spacing, boardData, 
           }
 
           if (boardData.boards[currentBoard].action) {
-            if (stringContainsForeign(boardData.boards[currentBoard].action)) {
-              doc.font('fallback')
-            } else {
-              doc.font('italic')
-            }
-
             if (layout == 'table') {
+              doc.font('regular')
               doc.text('[Action]\n'+boardData.boards[currentBoard].action, x+imgSize[0]+offset+tableTextOffset,y+textOffset, {width: tableColWidth[3] - 2 * tableTextOffset, align: 'left'})
               textOffset += doc.heightOfString('[Action]\n'+boardData.boards[currentBoard].action, {width: tableColWidth[3] - 2 * tableTextOffset, align: 'left'})
             } else {
+              if (stringContainsForeign(boardData.boards[currentBoard].action)) {
+                doc.font('fallback')
+              } else {
+                doc.font('regular')
+              }
+
               if (shrinkedImg && !boardData.boards[currentBoard].dialogue) {
                 imgAligned = (textHeight > (doc.heightOfString(boardData.boards[currentBoard].action, {width: imgSize[0], align: 'left'}) + 5))
               }
