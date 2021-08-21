@@ -121,13 +121,13 @@
       }
     ],
     "nsis": {
-      "perMachine": true,
-      "createDesktopShortcut": true,
+      "oneClick": false,
+      "createDesktopShortcut": false,
       "createStartMenuShortcut": true,
-      "license": "build/license_en.txt"
+      "allowElevation": true,
+      "allowToChangeInstallationDirectory": true
     },
     "appImage": {
-      "license": "build/license_en.txt"
     }
   },
   "browserslist": [
