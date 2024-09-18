@@ -695,11 +695,13 @@
     "add-watermark": "为导出的图像和视频添加水印。",
     "custom-watermark": "自定义水印图像（默认为空白）"
   },
-  "print-window": {
-    "pdf-title": "打印",
-    "pdf-intro": "您的故事板将按照您喜欢的方式进行打印。 选择一种格式后直接打印或导出为 PDF。",
-    "worksheet-title": "打印",
-    "worksheet-intro": "在此打印的文件上绘制故事板，然后将其神奇地重新导入到 Storyboarder 文件中！",
+  "print-project": {
+    "title": "打印",
+    "description": "您的故事板将按照您喜欢的方式进行打印。选择一种格式后直接打印或导出为 PDF。"
+  },
+  "print-worksheet": {
+    "worksheet-title": "打印工作表",
+    "worksheet-intro": "在此印刷纸上绘制故事板，然后将其神奇地重新导入到文件中！",
     "paper-size": "纸张尺寸",
     "letter": "信纸",
     "format": "A4",

@@ -2,9 +2,10 @@
 <html>
   <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="./css/fonts.css">
-    <link rel="stylesheet" href="./css/print-window.css">
-    <title>Print</title>
+    <link rel="stylesheet" href="../../../css/fonts.css">
+    <link rel="stylesheet" href="../../../css/worksheet.css">
+    <link rel="stylesheet" href="../../../css/spinkit.css">
+    <title>Print Worksheet</title>
   </head>
   <body>
     <div id="print-container">
@@ -37,26 +38,17 @@
 
       <div id="config-pane">
         <div id="close-button">&#10005;</div>
-        <h1 id="config-title">Print</h1>
-        <div id="config-intro">Your storyboard printed the way you like. Choose the format and either directly print or export it to PDF.</div>
+        <h1 id="config-title">Print Worksheet</h1>
+        <div id="config-intro">Choose the format and either directly print or export it to PDF.</div>
         
         <div class="row">
-          <label for="paper-size" id="paper-size">Paper Size</label>
+          <label for="paper-size">Paper Size</label>
           <select name="select" id="paper-size"> <!--Supplement an id here instead of using 'name'-->
             <option value="LTR" id="letter">Letter</option> 
             <option value="A4" selected id="format">A4</option>
           </select>
         </div>
-
-        <div class="row" id="paper-orientation-row">
-          <label for="paper-size" id="paper-orientation-label">Paper Orientation</label>
-          <select name="select" id="paper-orientation"> <!--Supplement an id here instead of using 'name'-->
-            <option value="table" selected id="paper-orientation-table">Table</option>
-            <option value="landscape" id="paper-orientation-landscape">Landscape</option>
-            <option value="portrait" id="paper-orientation-portrait">Portrait</option>
-          </select>
-        </div>
-
+        
         <div class="row row-grid">
           <div class="col">
             <label for="column-number" id="columns-label">Columns</label>
@@ -116,14 +108,43 @@
         </div>
 
         <div id="button-content">
-          <div class="button grey" id="print-button">Print!</div><a id="pdf-button" class="link-button" href="#">Export PDF</a>
+          <div class="button grey" id="print-button">Print!</div>
+          <a id="pdf-button" class="link-button" href="#">Export PDF</a>
 
+        </div>
+      </div>
+      <div id="preview-pane">
+        <div id="preview-loading">
+          <div class="loader-box">
+            <div class="sk-grid">
+              <div class="sk-grid-cube"></div>
+              <div class="sk-grid-cube"></div>
+              <div class="sk-grid-cube"></div>
+              <div class="sk-grid-cube"></div>
+              <div class="sk-grid-cube"></div>
+              <div class="sk-grid-cube"></div>
+              <div class="sk-grid-cube"></div>
+              <div class="sk-grid-cube"></div>
+              <div class="sk-grid-cube"></div>
+            </div>
+          </div>
+        </div>
+
+        <div id="page-navigation" style="display:none;">
+          <button id="prev_button" class="page-button">Previous</button>
+          <div class="page-info" id="page-info">Page <span id="page_num">1</span> / <span id="page_count">3</span></div>
+          <button id="next_button" class="page-button">Next</button>
+        </div>
+        <div id="preview-pane-content">
+          <div id="paper">
+            <img id="preview"/>
+          </div>
         </div>
       </div>
     </div>
 
   </body>
   <script>
-    require('./js/window/print-window')
+    require('./window')
   </script>
 </html>

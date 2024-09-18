@@ -1,5 +1,8 @@
-const {ipcRenderer, shell, remote, nativeImage, clipboard} = require('electron')
-const { app } = require('electron').remote
+require('electron-redux/preload')
+const {ipcRenderer, shell, nativeImage, clipboard} = require('electron')
+const remote = require('@electron/remote')
+const remoteMain = remote.require('@electron/remote/main')
+const { app } = remote
 const child_process = require('child_process')
 const fs = require('fs-extra')
 const path = require('path')
@@ -10,14 +13,13 @@ const Color = require('color-js')
 const plist = require('plist')
 const R = require('ramda')
 const CAF = require('caf')
-const isDev = require('electron-is-dev')
+const isDev = remote.require('electron-is-dev')
 const log = require('../shared/storyboarder-electron-log')
 log.catchErrors()
 const ReactDOM = require('react-dom')
 const h = require('../utils/h')
 const ShotGeneratorPanel = require('./components/ShotGeneratorPanel')
 
-const { getInitialStateRenderer } = require('electron-redux')
 const configureStore = require('../shared/store/configureStore')
 const observeStore = require('../shared/helpers/observeStore')
 
@@ -223,11 +225,11 @@ const updateHTMLText = () => {
   //#endregion
 }
 //#endregion
-const store = configureStore(getInitialStateRenderer(), 'renderer')
+const store = configureStore()
 window.$r = { store } // for debugging, e.g.: $r.store.getStore()
 const isCommandPressed = createIsCommandPressed(store)
 
-const prefsModule = require('electron').remote.require('./prefs')
+const prefsModule = remote.require('./prefs')
 prefsModule.init(path.join(app.getPath('userData'), 'pref.json'))
 // we're gradually migrating prefs to a reducer
 // we read any 2.0 toolbar related prefs into the toolbar reducer manually
@@ -324,6 +326,12 @@ let scrollPoint
 
 // CAF cancel tokens for async functions
 let cancelTokens = {}
+
+const msecsToFrames = value => Math.round(value / 1000 * boardData.fps)
+const framesToMsecs = value => Math.round(value / boardData.fps * 1000)
+
+// via ramda
+const defaultTo = (d, v) => v == null || v !== v ? d : v
 
 // via https://stackoverflow.com/a/41115086
 const serial = funcs =>
@@ -526,7 +534,7 @@ const load = async (event, args) => {
     // TODO add a cancel button to loading view when a fatal error occurs?
   }
   initialize(path.join(app.getPath('userData'), 'storyboarder-settings.json'))
-  electron.remote.getCurrentWindow().on('resize', resizeScale)
+  remote.getCurrentWindow().on('resize', resizeScale)
 }
 ipcRenderer.on('load', load)
 
@@ -711,8 +719,27 @@ const commentOnLineMileage = (miles) => {
   notifications.notify({message: message.join(' '), timing: 10})
 }
 
+const migrateStringDurations = () => {
+  for (let board of boardData.boards) {
+    // fix bug where board.duration is a string instead of a float (#2275)
+    if (typeof board.duration == 'string') {
+      let parsedDuration = parseFloat(board.duration)
+      if (isNaN(parsedDuration) == false) {
+        log.warn('migrateStringDurations: Parsing duration string', board.duration, 'as number', parsedDuration)
+        board.duration = parsedDuration
+        markBoardFileDirty()
+      } else {
+        log.error('migrateStringDurations: Unexpected value for board duration: ', board.duration)
+      }
+    }
+  }
+}
+
 // TODO this is really similar to verifyScene, but verifyScene requires the UI to be ready (for notifications)
 const migrateScene = () => {
+  // see: https://github.com/wonderunit/storyboarder/issues/2275
+  migrateStringDurations()
+
   let boardImagesPath = path.join(boardPath, 'images')
 
   // Old file may contain string board.duration due to issue #2275
@@ -1065,35 +1092,44 @@ const loadBoardUI = async () => {
     item.addEventListener('input', e => {
       switch (e.target.name) {
         case 'duration':
-          // if we can't parse the value as a number (e.g.: empty string),
-          // set to undefined
-          // which will render as the scene's default duration
-          let newDuration = isNaN(parseFloat(e.target.value))
-            ? boardData.defaultBoardTiming
-            : util.sToMsecs(parseFloat(e.target.value))
+          // .duration can be a float or undefined
+          let newDuration = defaultTo(undefined, parseFloat(e.target.value))
 
-          // set the new duration value
+          // set .duration for all selected boards
           for (let index of selections) {
             boardData.boards[index].duration = newDuration
           }
 
-          // update the `frames` view
-          document.querySelector('input[name="frames"]').value = util.msecsToFrames(boardData.fps, newDuration)
+          // render `frames` view
+          // see also: renderMetaData()
+          document.querySelector('input[name="frames"]').value = newDuration != null
+            // number, if present
+            ? msecsToFrames(
+                boardModel.boardDuration(
+                  boardData,
+                  boardData.boards[currentBoard]
+                )
+              )
+            // otherwise, 
+            : ''
 
           renderThumbnailDrawer()
           renderMarkerPosition()
           break
         case 'frames':
-          let newFrames = isNaN(parseInt(e.target.value, 10))
-            ? util.msecsToFrames(boardData.fps, boardData.defaultBoardTiming)
-            : parseInt(e.target.value, 10)
+          // .frames can be a float or undefined
+          let newFrames = defaultTo(undefined, parseFloat(e.target.value))
 
+          // set .duration for all selected boards
           for (let index of selections) {
             boardData.boards[index].duration = util.framesToMsecs(boardData.fps, newFrames)
           }
 
-          // update the `duration` view
-          document.querySelector('input[name="duration"]').value = util.framesToS(boardData.fps, newFrames)
+          // render `duration` view
+          // see also: renderMetaData()
+          document.querySelector('input[name="duration"]').value = newFrames != null
+            ? framesToMsecs(newFrames)
+            : ''
 
           renderThumbnailDrawer()
           renderMarkerPosition()
@@ -1140,7 +1176,7 @@ const loadBoardUI = async () => {
   const renderScrollIndicator = () => {
     let target = document.querySelector('.board-metadata-container')
     let el = document.querySelector('#board-metadata .scroll-indicator')
-    if (target.offsetHeight + target.scrollTop === target.scrollHeight) {
+    if (Math.ceil(target.offsetHeight + target.scrollTop) >= target.scrollHeight) {
       el.style.opacity = 0
     } else {
       el.style.opacity = 1.0
@@ -1716,7 +1752,7 @@ const loadBoardUI = async () => {
     //
     // HACK find the Shot Generator window manually
     const shotGeneratorWindow = remote.BrowserWindow.getAllWindows()
-      .find(w => w.webContents.getURL().match(/shot\-generator\.html/))
+      .find(w => !w.isDestroyed() && w.webContents.getURL().match(/shot\-generator\.html/))
     // try to close it
     if (shotGeneratorWindow && !shotGeneratorWindow.isDestroyed()) {
       shotGeneratorWindow.close()
@@ -3624,7 +3660,7 @@ let renderMetaData = () => {
     document.querySelector('input[name="newShot"]').checked = true
   }
 
-  if (boardData.boards[currentBoard].duration) {
+  if (boardData.boards[currentBoard].duration != null) {
     if (selections.size == 1) {
       // show current board
       for (let input of editableInputs) {
@@ -6514,9 +6550,10 @@ const showSignInWindow = () => {
       devTools: true,
       plugins: true,
       nodeIntegration: true,
-      enableRemoteModule: true
+      contextIsolation: false
     }
   })
+  remoteMain.enable(exportWebWindow.webContents)
   exportWebWindow.loadURL(`file://${__dirname}/../../upload.html`)
   exportWebWindow.once('ready-to-show', () => {
     exportWebWindow.show()
@@ -6842,96 +6879,36 @@ ipcRenderer.on('exportVideo', (event, args) => {
   ipcRenderer.send('analyticsEvent', 'Board', 'exportVideo')
 })
 
-let importWindow
-let printWindow = [null, null]
-const WORKSHEETPW = 0
-const PDFEXPORTPW = 1
 
-ipcRenderer.on('exportPrintablePdf', (event, sourcePath, filename) => {
+ipcRenderer.on('exportPrintableWorksheetPdf', (event, sourcePath) => {
+  let filename = 'Worksheet'
+
   let outputPath = path.join(
-    exporterCommon.ensureExportsPathExists(boardFilename), filename + ' ' + moment().format('YYYY-MM-DD hh.mm.ss') + '.pdf'
+    exporterCommon.ensureExportsPathExists(boardFilename),
+    filename + ' ' + moment().format('YYYY-MM-DD hh.mm.ss') + '.pdf'
   )
 
   if (!fs.existsSync(outputPath)) {
     fs.writeFileSync(outputPath, fs.readFileSync(sourcePath))
 
-    if (filename == 'Worksheet') {
-      notifications.notify({message: "A Worksheet PDF has been exported.", timing: 20})
-    } else {
-      notifications.notify({message: "A Storyboard PDF has been exported.", timing: 20})
-    }
+    notifications.notify({message: "A Worksheet PDF has been exported.", timing: 20})
     sfx.positive()
     shell.showItemInFolder(outputPath)
 
   } else {
     log.error('File exists')
     sfx.error()
-    if (filename == 'Worksheet') {
-      notifications.notify({ message: "Could not export Worksheet PDF.", timing: 20 })
-    } else {
-      notifications.notify({message: "Could not export Storyboard PDF.", timing: 20})
-    }
+    notifications.notify({ message: "Could not export Worksheet PDF.", timing: 20 })
   }
 })
 
-ipcRenderer.on('exportPDF', (event, args) => {
-  openPrintWindow(PDFEXPORTPW, showPDFPrintWindow);
-  ipcRenderer.send('analyticsEvent', 'Board', 'exportPDF')
-})
-
-
-ipcRenderer.on('printWorksheet', (event, args) => {
-  log.info(boardData)
-  openPrintWindow(WORKSHEETPW, showWorksheetPrintWindow);
-})
-
-const openPrintWindow = (printWindowType, showPrintWindow) => {
-  if (!printWindow[printWindowType]) {
-    printWindow[printWindowType] = new remote.BrowserWindow({
-      width: 1200,
-      height: 800,
-      minWidth: 600,
-      minHeight: 600,
-      backgroundColor: '#333333',
-      show: false,
-      center: true,
-      parent: remote.getCurrentWindow(),
-      resizable: true,
-      frame: false,
-      modal: true,
-      webPreferences: {
-        nodeIntegration: true,
-        enableRemoteModule: true
-      }
-    })
-    printWindow[printWindowType].loadURL(`file://${__dirname}/../../print-window.html`)
-    printWindow[printWindowType].once('ready-to-show', () => {
-      showPrintWindow(printWindow[printWindowType]);
-    })
-  } else if (!printWindow[printWindowType].isVisible()) {
-      showPrintWindow(printWindow[printWindowType]);
-  }
-
-  ipcRenderer.send('analyticsEvent', 'Board', 'show print window')
-}
-
-const showPDFPrintWindow = (printWindow) => {
-  printWindow.webContents.send('exportPDFData', boardData, boardFilename)
-  setTimeout(()=>{printWindow.show()}, 200)
-}
-
-const showWorksheetPrintWindow = (printWindow) => {
-  printWindow.webContents.send('worksheetData',boardData.aspectRatio, currentScene, scriptData)
-  setTimeout(()=>{printWindow.show()}, 200)
-}
 
 ipcRenderer.on('importFromWorksheet', (event, args) => {
   importFromWorksheet(args)
 })
 
-ipcRenderer.on('importNotification', () => {
-  let that = this
 
+ipcRenderer.on('importNotification', () => {
   let ip = getIpAddress()
   if (ip) {
     let message = "Did you know that you can import directly from your phone?\n\nOn your mobile phone, go to the web browser and type in: \n\n" + ip + ":1888"
@@ -6939,6 +6916,7 @@ ipcRenderer.on('importNotification', () => {
   }
 })
 
+let importWindow
 ipcRenderer.on('importWorksheets', (event, args) => {
   if (!importWindow) {
     importWindow = new remote.BrowserWindow({
@@ -6955,9 +6933,10 @@ ipcRenderer.on('importWorksheets', (event, args) => {
       modal: true,
       webPreferences: {
         nodeIntegration: true,
-        enableRemoteModule: true
+        contextIsolation: false
       }
     })
+    remoteMain.enable(importWindow.webContents)
     importWindow.loadURL(`file://${__dirname}/../../import-window.html`)
   } else {
     if (!importWindow.isVisible()) {
@@ -7218,6 +7197,15 @@ ipcRenderer.on('storyboarder:get-state', event => {
       board
     }
   )
+})
+
+ipcRenderer.on('exportPDF:getProjectData-request', (event, ...args) => {
+  event.sender.send('exportPDF:getProjectData-response', {
+    scriptData,
+    currentScene,
+    currentStoryboarderFilePath: boardFilename,
+    currentBoardData: boardData
+  })
 })
 
 const logToView = opt => ipcRenderer.send('log', opt)

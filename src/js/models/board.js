@@ -59,6 +59,12 @@ const boardOrderedLayerFilenames = board => {
   return { indices, filenames }
 }
 
+// board.duration can be a float or undefined
+// if undefined, use default board timing (defined for scene)
+//
+// main-window migrateStringDurations now ensures durations are floats
+// when a .storyboarder file is loaded, so
+// TODO we *might* not need to convert here via Number() anymore?
 const boardDuration = (scene, board) =>
   !isNaN(board.duration)
     ? board.duration
