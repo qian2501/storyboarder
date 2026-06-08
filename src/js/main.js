@@ -162,7 +162,7 @@ app.on('ready', async () => {
       appLocale = 'en-US'
     }
     settings.selectedLanguage = appLocale
-    settings.defaultLanguage = appLocale
+    settings.defaultLanguage = 'en-US'
   } else {
     let selectedLanguage = languageSettings.getSettingByKey("selectedLanguage")
     if(!settings.builtInLanguages.some((item) => item.fileName === selectedLanguage) &&
