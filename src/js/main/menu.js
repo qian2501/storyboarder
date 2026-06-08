@@ -556,15 +556,6 @@ const createMenu = ({ store, send }) => {
         }
       },
       {
-        type: 'separator'
-      },
-      {
-        label: i18n.t('menu.tools.shot-generator'),
-        click (item, focusedWindow, event) {
-          send('revealShotGenerator')
-        }
-      },
-      {
         label: i18n.t('menu.tools.edit-in-photoshop'),
         accelerator: keystrokeFor('menu:tools:edit-in-photoshop'),
         click (item, focusedWindow, event) {
@@ -879,163 +870,6 @@ const createMenu = ({ store, send }) => {
     }
   ]
 
-  const shotGeneratorMenu = (i18n) => [
-    ...AppMenu.about({ includePreferences: false }, i18n),
-    {
-      label: i18n.t('menu.file.title'),
-      submenu: [
-        {
-          label: i18n.t('menu.file.open'),
-          accelerator: keystrokeFor('menu:file:open'),
-          click (item, focusedWindow, event) {
-            send('openDialogue')
-          }
-        },
-        {
-          label: i18n.t('menu.file.export-glTF'),
-          click (item, focusedWindow, event) {
-            send('shot-generator:export-gltf')
-          }
-        }
-      ]
-    },
-    {
-      label: i18n.t('menu.edit.title'),
-      submenu: [
-        {
-          label: i18n.t('menu.edit.undo'),
-          accelerator: keystrokeFor('menu:edit:undo'),
-          click () {
-            send('shot-generator:edit:undo')
-          }
-        },
-        {
-          label: i18n.t('menu.edit.redo'),
-          accelerator: keystrokeFor('menu:edit:redo'),
-          click () {
-            send('shot-generator:edit:redo')
-          }
-        },
-        {type: 'separator'},
-
-        {
-          role: 'cut',
-          label: i18n.t("menu.edit.cut")
-        },
-        {
-          role: 'copy',
-          label: i18n.t("menu.edit.copy")
-        },
-        {
-          role: 'paste',
-          label: i18n.t("menu.edit.paste")
-        },
-    
-        {
-          label: i18n.t('menu.edit.duplicate'),
-          accelerator: 'CommandOrControl+d',
-          click () {
-            send('shot-generator:object:duplicate')
-          }
-        },
-    
-        {
-          label: i18n.t('menu.edit.group-ungroup'),
-          accelerator: 'CommandOrControl+g',
-          click () {
-            send('shot-generator:object:group')
-          }
-        },
-        
-        {
-          label: i18n.t('menu.edit.open-shot-explorer'),
-          accelerator: 'CommandOrControl+j',
-          click () {
-            send('shot-generator:show:shot-explorer')
-          }
-        },
-        
-        // {role: 'pasteandmatchstyle'},
-        {
-          role: 'delete',
-          label: i18n.t("menu.edit.delete")
-        },
-
-        {
-          role: 'selectall',
-          label: i18n.t("menu.edit.select-all")
-        },
-        {
-          label: i18n.t('menu.edit.drop'),
-          accelerator: 'CommandOrControl+b',
-          click () {
-            send('shot-generator:object:drops')
-          }
-        },
-      ]
-    },
-    {
-      label: i18n.t('menu.view.title'),
-      submenu: [
-        ...SubMenuFragments.View(i18n),
-        {
-          label: i18n.t('menu.view.enable-fps-meter'),
-          type: 'checkbox',
-          click (item, focusedWindow, event) {
-            send('shot-generator:menu:view:fps-meter')
-          }
-        },
-        {type: 'separator'},
-        {
-          label: i18n.t('menu.view.scale-ui-up'),
-          accelerator: process.platform === 'darwin' ? 'CommandOrControl+=' : 'CommandOrControl+Plus',
-          type: 'normal',
-          click (item, focusedWindow, event) {
-            send('shot-generator:menu:view:scale-ui-by', 0.1)
-          }
-        },
-        {
-          label: i18n.t('menu.view.scale-ui-down'),
-          accelerator: keystrokeFor("menu:view:zoom-out"),
-          type: 'normal',
-          click (item, focusedWindow, event) {
-            send('shot-generator:menu:view:scale-ui-by', -0.1)
-          }
-        },
-        {
-          label: i18n.t('menu.view.reset-ui-scale'),
-          accelerator: 'CommandOrControl+0',
-          type: 'normal',
-          click (item, focusedWindow, event) {
-            send('shot-generator:menu:view:scale-ui-reset', 1)
-          }
-        },
-        {type: 'separator'},
-        {
-          accelerator: 'CommandOrControl+k',
-          label: i18n.t('menu.view.cycle-shading-mode'),
-          click () {
-            send('shot-generator:view:cycleShadingMode')
-          }
-        },
-      ]
-    },
-    {
-      role: 'window',
-      label: i18n.t('menu.window.title'),
-      submenu: [
-        ...SubMenuFragments.windowing(i18n)
-      ]
-    },
-    {
-      role: 'help',
-      label: i18n.t("menu.help.title"),
-      submenu: [
-        ...SubMenuFragments.help(i18n)
-      ]
-    }
-  ]
-
   const printProjectTemplate = (i18n) => [
     ...AppMenu.about({ includePreferences: false }, i18n),
     {
@@ -1081,7 +915,6 @@ const createMenu = ({ store, send }) => {
   const templateFns = {
     'welcomeTemplate': welcomeTemplate,
     'template': template,
-    'shotGeneratorMenu': shotGeneratorMenu,
     'printProjectTemplate': printProjectTemplate
   }
 
@@ -1128,12 +961,6 @@ const createMenu = ({ store, send }) => {
           }
         }
       },
-      shotGenerator: {
-        entry: [
-          assign({ template: 'shotGeneratorMenu' }),
-          render
-        ]
-      },
       printProject: {
         entry: [
           assign({ template: 'printProjectTemplate' }),
@@ -1144,7 +971,6 @@ const createMenu = ({ store, send }) => {
     on: {
       'setWelcomeMenu': 'welcome',
       'setMenu': 'mainWindow',
-      'setShotGeneratorMenu': 'shotGenerator',
       'setPrintProjectMenu': 'printProject',
 
       'languageChanged': { actions: render }
@@ -1154,7 +980,6 @@ const createMenu = ({ store, send }) => {
 
   ipcMain.on('menu:setWelcomeMenu', (event) => service.send('setWelcomeMenu'))
   ipcMain.on('menu:setMenu', (event) => service.send('setMenu'))
-  ipcMain.on('menu:setShotGeneratorMenu', (event) => service.send('setShotGeneratorMenu'))
   ipcMain.on('menu:setPrintProjectMenu', (event) => service.send('setPrintProjectMenu'))
 
   ipcMain.on('menu:setEnableAudition', (event, value) => service.send('setEnableAudition', { value }))

@@ -18,7 +18,6 @@ const log = require('../shared/storyboarder-electron-log')
 log.catchErrors()
 const ReactDOM = require('react-dom')
 const h = require('../utils/h')
-const ShotGeneratorPanel = require('./components/ShotGeneratorPanel')
 
 const configureStore = require('../shared/store/configureStore')
 const observeStore = require('../shared/helpers/observeStore')
@@ -182,25 +181,8 @@ const updateHTMLText = () => {
   translateCheckbox("#new-shot-label", "main-window.board-information.new-shot")
   translateCheckbox("#duration", "main-window.board-information.duration")
   translateTooltip("#line-mileage", "main-window.board-information.line-mileage")
-  translateTooltip("#shot-generator-container", "main-window.board-information.shot-generator-container")
-  translateTooltip("#new-shot", "main-window.board-information.new-shot-tooltip")
-  translateTooltip("#duration-s", "main-window.board-information.duration-s")
-  translateTooltip("#duration-fps", "main-window.board-information.duration-fps")
-  translateHtml("#dialog-title", "main-window.board-information.dialog-title")
-  translateTooltip("#suggested-dialogue-duration", "main-window.board-information.suggested-dialogue-duration")
-  translateTooltip("#dialogue-tooltip", "main-window.board-information.dialogue-tooltip")
-  translateHtml("#action-title", "main-window.board-information.action-title")
-  translateTooltip("#action-tooltip", "main-window.board-information.action-tooltip")
-  translateHtml("#note-title", "main-window.board-information.note-title")
-  translateTooltip("#note-tooltip", "main-window.board-information.note-tooltip")
-  translateHtml("#clear-note-title", "main-window.board-information.clear-note-title")
-  translateTooltip("#clear-note-tooltip", "main-window.board-information.clear-note-tooltip")
-  translateTooltip("#remove-audio", "main-window.board-information.remove-audio")
-  translateHtml("#reference-layer-title", "main-window.board-information.reference-layer-title")
-  translateTooltip("#reference-layer-tooltip", "main-window.board-information.reference-layer-tooltip")
-  translateHtml("#clear-title", "main-window.board-information.clear-title")
-  translateTooltip("#reference-layer-tooltip", "main-window.board-information.reference-layer-tooltip")
-  
+
+
   translateTooltip("#merge-down-tooltip", "main-window.board-information.merge-down-tooltip")
   translateHtml("#merge-down-title", "main-window.board-information.merge-down-title")
   translateTooltip("#merge-up-tooltip", "main-window.board-information.merge-up-tooltip")
@@ -1519,24 +1501,7 @@ const loadBoardUI = async () => {
           markImageFileDirty([refLayer.index])
         }
       }
-
-      // if board has a shot generator layer ...
-      if (board.layers['shot-generator']) {
-        let sgLayer = storyboarderSketchPane.sketchPane.layers.findByName('shot-generator')
-        // ... and the opacity value is stale ...
-        if (board.layers['shot-generator'].opacity !== sgLayer.getOpacity()) {
-          // ... update the opacity value ...
-          board.layers['shot-generator'].opacity = sgLayer.getOpacity()
-
-          // ... and save the board file
-          markBoardFileDirty()
-
-          // update posterframe and thumbnail
-          markImageFileDirty([sgLayer.index])
-        }
-      }
     }
-
     // alternately, to immediately update ONLY posterframe and thumbnail:
     /*
     // update the posterframe
@@ -1748,15 +1713,6 @@ const loadBoardUI = async () => {
     saveImageFile() // NOTE image is saved first, which ensures layers are present in data
     saveBoardFile() // ... then project data can be saved
 
-    // try to close the Shot Generator based on its URL
-    //
-    // HACK find the Shot Generator window manually
-    const shotGeneratorWindow = remote.BrowserWindow.getAllWindows()
-      .find(w => !w.isDestroyed() && w.webContents.getURL().match(/shot\-generator\.html/))
-    // try to close it
-    if (shotGeneratorWindow && !shotGeneratorWindow.isDestroyed()) {
-      shotGeneratorWindow.close()
-    }
 
     // still dirty?
     if (boardFileDirty) {
@@ -3571,42 +3527,6 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
         reject(e)
       })
   })
-}
-
-const renderShotGeneratorPanel = () => {
-  let src = path.join(
-    path.dirname(boardFilename),
-    'images',
-    boardModel.boardFilenameForLayerThumbnail(
-      boardData.boards[currentBoard],
-      'shot-generator'
-    )
-  )
-
-  let thumbnail = fs.existsSync(src)
-    ? src + '?' + cacheKey(src)
-    : null
-
-  let aspectRatio = boardData.aspectRatio
-
-  let onOpen = event => {
-    event.preventDefault()
-
-    // briefly show loading cursor while we load the Shot Generator window
-    let el = document.querySelector('#shot-generator-container a')
-    let prev = el.style.cursor
-    el.style.cursor = 'wait'
-    setTimeout(() => {
-      el.style.cursor = prev
-    }, 2000)
-
-    ipcRenderer.send('shot-generator:open')
-  }
-
-  ReactDOM.render(
-    h([ShotGeneratorPanel, { thumbnail, aspectRatio, onOpen }]),
-    document.querySelector('#shot-generator-container')
-  )
 }
 
 let renderMarkerPosition = () => {
@@ -6996,11 +6916,6 @@ ipcRenderer.on('toggleAudition', value => {
   audioPlayback.toggleAudition()
 })
 
-ipcRenderer.on('revealShotGenerator', value => {
-  document.querySelector('#shot-generator-container').scrollIntoView({
-    behavior: 'smooth'
-  })
-})
 
 const ZOOM_LEVELS = [
   .25,
@@ -7035,168 +6950,6 @@ const closest = (arr, target) => {
 ipcRenderer.on('zoomReset', value => {
   zoomIndex = ZOOM_CENTER
   storyboarderSketchPane.zoomCenter(ZOOM_LEVELS[zoomIndex])
-})
-
-const saveToBoardFromShotGenerator = async ({ uid, data, images }) => {
-  // find the board by id
-  let index = boardData.boards.findIndex(b => b.uid === uid)
-
-  if (index === -1) {
-    log.error(`board with uid ${uid} does not exist`)
-    alert('Could not save shot: missing board.')
-    return
-  }
-
-  // make a reference
-  let board = boardData.boards[index]
-
-  // update the board data in place
-  boardData.boards[index] = {
-    ...board,
-    layers: {
-      ...board.layers,
-      'shot-generator': {
-        // merge with existing, if available
-        ...((board.layers && board.layers['shot-generator']) || {}),
-        // ensure url is present
-        url: boardModel.boardFilenameForLayer(board, 'shot-generator'),
-        // ensure opacity is 1.0
-        opacity: 1.0,
-        // layer gets a thumbnail
-        thumbnail: boardModel.boardFilenameForLayerThumbnail(board, 'shot-generator')
-      },
-    },
-    // shot generator
-    sg: {
-      version: pkg.version,
-      data
-    }
-  }
-  // force the reference layer opacity to be 100
-  layersEditor.setReferenceOpacity(1)
-
-  // update the reference
-  board = boardData.boards[index]
-
-  markBoardFileDirty()
-
-  // resize
-  let { width, height } = storyboarderSketchPane.sketchPane
-  let image = await exporterCommon.getImage(images.camera)
-  let context = createSizedContext([width, height])
-
-  // fit to destination (until we fix the shot generator render size)
-  let [x, y, w, h] = util.fitToDst(context.canvas, image).map(Math.ceil)
-  // FIXME can we fix the bug to avoid having to add padding?
-  // add some padding to solve for the white line bug
-  w += 3
-  h += 3
-  context.drawImage(image, 0, 0, w, h)
-
-  // save shot-generator.png
-  saveDataURLtoFile(context.canvas.toDataURL(), board.layers['shot-generator'].url)
-
-  // save camera-plot (re-use context)
-  let plotImage = await exporterCommon.getImage(images.plot)
-  context.canvas.width = 900
-  context.canvas.height = 900
-  context.drawImage(plotImage, 0, 0)
-  saveDataURLtoFile(
-    context.canvas.toDataURL(),
-    boardModel.boardFilenameForCameraPlot(board)
-  )
-
-  // save shot-generator-thumbnail.jpg
-  // thumbnail size
-  let size = getLayerThumbnailSize(boardData.aspectRatio)
-  context.canvas.width = size[0]
-  context.canvas.height = size[1]
-  // FIXME do we still need padding?
-  let [x2, y2, w2, h2] = util.fitToDst(context.canvas, image).map(Math.ceil)
-  w2 += 3
-  h2 += 3
-  context.drawImage(image, 0, 0, w2, h2)
-  saveDataURLtoFile(
-    context.canvas.toDataURL({ type: 'image/jpeg', encoderOptions: 0.92 }),
-    board.layers['shot-generator'].thumbnail
-  )
-  context.canvas = null
-  context = null
-
-
-  await saveThumbnailFile(index, { forceReadFromFiles: true })
-  await updateThumbnailDisplayFromFile(index)
-
-  await savePosterFrame(board, /*forceReadFromFiles:*/ true)
-
-  if (index === currentBoard) {
-    // FIXME known issue: onion skin does not reload to reflect the changed file
-    //       see: https://github.com/wonderunit/storyboarder/issues/1185
-    await updateSketchPaneBoard()
-  }
-
-  renderShotGeneratorPanel()
-}
-ipcRenderer.on('saveShot', async (event, { uid, data, images }) => {
-  storeUndoStateForScene(true)
-  await saveToBoardFromShotGenerator({ uid, data, images })
-  storeUndoStateForScene()
-  
-  ipcRenderer.send('shot-generator:update', {
-    board: boardData.boards.find(board => board.uid === uid)
-  })
-})
-ipcRenderer.on('insertShot', async (event, { data, images, currentBoard }) => {
-  let position = boardData.boards.map(board => board.uid).indexOf(currentBoard.uid);
-  let index = await newBoard(position + 1)
-  await gotoBoard(index)
-
-  let uid = boardData.boards[index].uid
-
-  storeUndoStateForScene(true)
-  await saveToBoardFromShotGenerator({ uid, data, images })
-  storeUndoStateForScene()
-
-  ipcRenderer.send('shot-generator:update', {
-    board: boardData.boards[index]
-  })
-})
-ipcRenderer.on('storyboarder:get-boards', event => {
-  ipcRenderer.send('shot-generator:get-boards', {
-    boards: boardData.boards.map(board => ({
-      uid: board.uid,
-      shot: board.shot,
-      thumbnail: boardModel.boardFilenameForThumbnail(board),
-      hasSg: board.sg ? true : false
-    }))
-  })
-})
-ipcRenderer.on('storyboarder:get-board', (event, uid) => {
-  ipcRenderer.send(
-    'shot-generator:get-board',
-    boardData.boards.find(board => board.uid === uid)
-  )
-})
-ipcRenderer.on('storyboarder:get-storyboarder-file-data', (event, uid) => {
-  ipcRenderer.send(
-    'shot-generator:get-storyboarder-file-data',
-    {
-      storyboarderFilePath: boardFilename,
-      boardData: {
-        version: boardData.version,
-        aspectRatio: boardData.aspectRatio
-      }
-    }
-  )
-})
-ipcRenderer.on('storyboarder:get-state', event => {
-  let board = boardData.boards[currentBoard]
-  ipcRenderer.send(
-    'shot-generator:get-state',
-    {
-      board
-    }
-  )
 })
 
 ipcRenderer.on('exportPDF:getProjectData-request', (event, ...args) => {

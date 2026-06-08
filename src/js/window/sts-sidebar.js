@@ -143,11 +143,6 @@ const init = (_shotTemplateSystem, _aspectRatio, _store) => {
   document.querySelector("#sts-input1").addEventListener('keydown', onInputKeyDown)
   document.querySelector('#sts-random').addEventListener('click', onRandom)
 
-  document.querySelector("#shot-generator-container").addEventListener('click', ()=>{
-    if (document.querySelector("#board-metadata .board-metadata-container").scrollTop == 0) {
-      document.querySelector("#board-metadata .board-metadata-container").scrollTop = document.querySelector("#shot-generator-container").offsetTop
-    }
-  })
 
   // TODO rebind if store changes
   isEventMatchForCommand = createIsEventMatchForCommand(store)
@@ -175,22 +170,11 @@ const reset = sts => {
   attachListeners()
 }
 
-const setEnabled = value => {
-  if (!value) {
-    let el = document.querySelector('#shot-generator-container')
-    el.innerHTML = `
-      <div class="inline"><svg class="smallicon"><use xlink:href="./img/symbol-defs.svg#icon-camera"></use></svg>Shot Generator</div>
-      <div style="line-height: 1.25; padding: 6px 0; color: #777">
-        Shot Generator has been disabled automatically because the graphics card on this machine cannot support its use of WebGL.
-      </div>
-    `
-  }
-}
+
 
 //setTimeout(()=>{shotTemplateSystem.saveImagesToDisk(1000)}, 2000)
 
 module.exports = Object.assign(emitter, {
   init,
-  reset,
-  setEnabled
+  reset
 })

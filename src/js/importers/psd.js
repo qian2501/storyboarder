@@ -19,8 +19,7 @@ const fromPsdBuffer = buffer => {
     'tone',
     'pencil',
     'ink',
-    'notes',
-    'shot-generator'
+    'notes'
   ]
 
   let psd

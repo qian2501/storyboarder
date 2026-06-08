@@ -1,6 +1,6 @@
 import React, { useMemo, useEffect } from 'react'
 import Item from './item'
-import Scrollable from '../../shot-generator/components/Scrollable'
+import Scrollable from '../../components/Scrollable'
 const List = ({languages, onSelect, selectedLanguage}) => {
 
     const createElements = () => {

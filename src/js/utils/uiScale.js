@@ -1,7 +1,7 @@
 const electron = require('electron')
 const remote = require('@electron/remote')
 const { webFrame } = electron
-const SettingsService = require('../windows/shot-generator/SettingsService')
+const SettingsService = require('./SettingsService')
 const AutoUIScaler = require('./AutoUIScaler')
 let settingsService
 let autoUIScaler 

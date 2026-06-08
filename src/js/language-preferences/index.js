@@ -7,7 +7,7 @@ import ItemList from './ItemList'
 import fs, { readFileSync } from 'fs-extra'
 import path from 'path'
 import JSONEditor from './JsonEditor/JsonEditor';
-import Modal from '../shot-generator/components/Modal'
+import Modal from './Modal'
 import {settings} from '../services/language.config'
 const electronApp = electron.app ? electron.app : remote.app
 const userDataPath = electronApp.getPath('userData')

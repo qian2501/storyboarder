@@ -113,9 +113,6 @@ class LayersEditor extends EventEmitter {
       // ... prefer the reference layer opacity ...
       if (board.layers.reference && board.layers.reference.opacity != null) {
         value = board.layers.reference.opacity
-      // ... otherwise, try for the shot-generator opacity ...
-      } else if (board.layers['shot-generator'] && board.layers['shot-generator'].opacity != null) {
-        value = board.layers['shot-generator'].opacity
       }
     }
 
@@ -128,9 +125,6 @@ class LayersEditor extends EventEmitter {
 
   setReferenceOpacity (value) {
     this.storyboarderSketchPane.sketchPane.layers.findByName('reference').setOpacity(value)
-    this.storyboarderSketchPane.sketchPane.layers.findByName('shot-generator').setOpacity(value)
-    this.render()
-    this.emit('opacity')
   }
 
   render () {

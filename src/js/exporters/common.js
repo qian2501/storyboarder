@@ -72,8 +72,7 @@ const createWhiteContext = size => {
 
 // convert board data to canvasImageSourcesData
 const getCanvasImageSourcesDataForBoard = (board, projectFileAbsolutePath) => {
-  // shot-generator = 0
-  // reference = 1
+  // reference = 0
   const REFERENCE_LAYER_INDEX = 1
 
   return new Promise((resolve, reject) => {

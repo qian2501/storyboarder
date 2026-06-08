@@ -28,11 +28,9 @@ const fountainSceneIdUtil = require('./fountain-scene-id-util')
 const importerFinalDraft = require('./importers/final-draft')
 const xml2js = require('xml2js')
 
-const MobileServer = require('./express-app/app')
 
 const preferencesUI = require('./windows/preferences')()
 const registration = require('./windows/registration/main')
-const shotGeneratorWindow = require('./windows/shot-generator/main')
 const printProject = require('./windows/print-project/main')
 const printWorksheet = require('./windows/print-worksheet/main')
 
@@ -112,8 +110,6 @@ let currentScriptDataObject // used to store data until 'createNew' ipc fires ba
 let toBeOpenedPath
 
 let isLoadingProject
-
-let appServer
 
 // attempt to support older GPUs
 app.commandLine.appendSwitch('ignore-gpu-blacklist')
@@ -285,31 +281,6 @@ app.on('ready', async () => {
       }
     }
   }
-
-  appServer = new MobileServer()
-  appServer.on('pointerEvent', (e)=> {
-    log.info('pointerEvent')
-  })
-  appServer.on('image', (e) => {
-    mainWindow.webContents.send('newBoard', 1)
-    mainWindow.webContents.send('importImage', e.fileData)
-  })
-  appServer.on('worksheet', (e) => {
-    mainWindow.webContents.send('importWorksheets', [e.fileData])
-  })
-  appServer.on('error', err => {
-    if (err.errno === 'EADDRINUSE') {
-      // dialog.showMessageBox(null, {
-      //   type: 'error',
-      //   message: 'Could not start the mobile web app server. The port was already in use. Is Storyboarder already open?'
-      // })
-    } else {
-      dialog.showMessageBox(null, {
-        type: 'error',
-        message: err
-      })
-    }
-  })
 
   await attemptLicenseVerification()
 
@@ -1123,8 +1094,6 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
         analytics.screenView('welcome')
       }
 
-      appServer.setCanImport(false)
-
       // stop watching any fountain files
       if (scriptWatcher) { scriptWatcher.close() }
 
@@ -1504,8 +1473,6 @@ ipcMain.on('log', (event, opt) => {
 })
 
 ipcMain.on('workspaceReady', event => {
-  appServer.setCanImport(true)
-
   !loadingStatusWindow.isDestroyed() && loadingStatusWindow.hide()
 
   if (!mainWindow) return
@@ -1650,90 +1617,12 @@ ipcMain.on('signInSuccess', (event, response) => {
   mainWindow.webContents.send('signInSuccess', response)
 })
 
-menuBus.on('revealShotGenerator',
-  event => mainWindow.webContents.send('revealShotGenerator'))
-
 menuBus.on('zoomReset',
   event => mainWindow.webContents.send('zoomReset'))
 menuBus.on('scale-ui-by',
   (event, value) => mainWindow.webContents.send('scale-ui-by', value))
 menuBus.on('scale-ui-reset',
   (event, value) => mainWindow.webContents.send('scale-ui-reset', value))
-
-menuBus.on('saveShot',
-  (event, data) => mainWindow.webContents.send('saveShot', data))
-ipcMain.on('insertShot',
-  (event, data) => mainWindow.webContents.send('insertShot', data))
-ipcMain.on('storyboarder:get-boards',
-  event => mainWindow.webContents.send('storyboarder:get-boards'))
-ipcMain.on('shot-generator:get-boards', (event, data) => {
-  let win = shotGeneratorWindow.getWindow()
-  if (win) {
-    win.send('shot-generator:get-boards', data)
-  }
-})
-ipcMain.on('storyboarder:get-board',
-  (event, uid) => mainWindow.webContents.send('storyboarder:get-board', uid))
-ipcMain.on('shot-generator:get-board', (event, board) => {
-  let win = shotGeneratorWindow.getWindow()
-  if (win) {
-    win.send('shot-generator:get-board', board)
-  }
-})
-ipcMain.on('storyboarder:get-storyboarder-file-data',
-  (event, uid) => mainWindow.webContents.send('storyboarder:get-storyboarder-file-data'))
-ipcMain.on('shot-generator:get-storyboarder-file-data', (event, data) => {
-  let win = shotGeneratorWindow.getWindow()
-  if (win) {
-    win.send('shot-generator:get-storyboarder-file-data', data)
-  }
-})
-ipcMain.on('storyboarder:get-state',
-  (event, uid) => mainWindow.webContents.send('storyboarder:get-state'))
-ipcMain.on('shot-generator:get-state', (event, data) => {
-  let win = shotGeneratorWindow.getWindow()
-  if (win) {
-    win.send('shot-generator:get-state', data)
-  }
-})
-ipcMain.on('shot-generator:open', () => {
-  // TODO analytics?
-  // analytics.screenView('shot-generator')
-  shotGeneratorWindow.show(win => {
-    win.webContents.send('shot-generator:reload')
-  })
-})
-ipcMain.on('shot-generator:update', (event, { board }) => {
-  let win = shotGeneratorWindow.getWindow()
-  if (win) {
-    win.webContents.send('update', { board })
-  }
-})
-ipcMain.on('shot-generator:loadBoardByUid', (event, uid) => {
-  let win = shotGeneratorWindow.getWindow()
-  if (win) {
-    win.webContents.send('loadBoardByUid', uid)
-  }
-})
-ipcMain.on('shot-generator:requestSaveShot', (event, uid) => {
-  let win = shotGeneratorWindow.getWindow()
-  if (win) {
-    win.webContents.send('requestSaveShot', uid)
-  }
-})
-ipcMain.on('shot-generator:requestInsertShot', (event, uid) => {
-  let win = shotGeneratorWindow.getWindow()
-  if (win) {
-    win.webContents.send('requestInsertShot', uid)
-  }
-})
-
-ipcMain.on('shot-generator:updateStore', (event, action) => {
-  let win = shotGeneratorWindow.getWindow()
-  if (win) {
-    win.webContents.send('shot-generator:updateStore', action)
-  }
-})
 
 
 
