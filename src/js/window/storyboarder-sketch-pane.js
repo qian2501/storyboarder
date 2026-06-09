@@ -8,8 +8,8 @@ const remote = require('@electron/remote')
 const fs = require('fs')
 const path = require('path')
 
-const { SketchPane } = require('alchemancy')
-const SketchPaneUtil = require('alchemancy').util
+const { SketchPane } = require('../vendor/alchemancy/sketch-pane.common')
+const SketchPaneUtil = require('../vendor/alchemancy/sketch-pane.common').util
 
 const MarqueeStrategy = require('./storyboarder-sketch-pane/marquee-strategy')
 

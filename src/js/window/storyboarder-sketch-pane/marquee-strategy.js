@@ -1,5 +1,5 @@
 const paper = require('paper')
-const SketchPaneUtil = require('alchemancy').util
+const SketchPaneUtil = require('../../vendor/alchemancy/sketch-pane.common').util
 
 const constrainPoint = (point, rectangle) => {
   point = paper.Point.max(point, rectangle.topLeft)

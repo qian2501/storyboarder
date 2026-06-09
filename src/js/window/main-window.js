@@ -24,8 +24,8 @@ const observeStore = require('../shared/helpers/observeStore')
 
 
 const StoryboarderSketchPane = require('./storyboarder-sketch-pane')
-const { SketchPane } = require('alchemancy')
-const SketchPaneUtil = require('alchemancy').util
+const { SketchPane } = require('../vendor/alchemancy/sketch-pane.common')
+const SketchPaneUtil = require('../vendor/alchemancy/sketch-pane.common').util
 const undoStack = require('../undo-stack')
 
 const Toolbar = require('./toolbar')

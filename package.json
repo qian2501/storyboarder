@@ -161,7 +161,6 @@
 
     "@xstate/react": "0.7.1",
     "ag-psd": "^11.1.3",
-    "alchemancy": "github:wonderunit/alchemancy#38c4670",
     "archiver": "2.0.3",
     "caf": "7.0.4",
     "chokidar": "3.2.1",
@@ -198,6 +197,7 @@
     "paper": "0.11.5",
     "pdfjs-dist": "^2.13.216",
     "pdfkit": "^0.13.0",
+    "pixi.js": "4.8.7",
     "plist": "^3.0.5",
     "qr-image": "^3.2.0",
     "quad-indices": "^2.0.1",
