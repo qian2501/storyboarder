@@ -110,7 +110,6 @@ let commands = [
       ['Open...', keystrokeFor("menu:file:open")],
       ['<strong>Export Animated GIF</strong>', keystrokeFor("menu:file:export-animated-gif")],
       ['<strong>Print a Worksheet...</strong>', keystrokeFor("menu:file:print-worksheet")],
-      ['Import Worksheets...', keystrokeFor("menu:file:import-worksheets")],
       ['<strong>Import Images...</strong>', keystrokeFor("menu:file:import-images")],
     ]
   ],

@@ -26,7 +26,6 @@ const defaultKeyMap = {
   "menu:file:save-as": "CommandOrControl+Shift+s",
   "menu:file:export-animated-gif": "CommandOrControl+e",
   "menu:file:print-worksheet": "CommandOrControl+Shift+p",
-  "menu:file:import-worksheets": "CommandOrControl+i",
   "menu:file:import-images": "CommandOrControl+Shift+i",
   "menu:file:print": "CommandOrControl+p",
 

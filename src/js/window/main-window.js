@@ -5911,62 +5911,6 @@ const fitImageData = async (boardSize, imageData) => {
   }
 }
 
-const importFromWorksheet = async (imageArray) => {
-  let insertAt = 0 // pos
-  let boards = []
-
-  // related: insertNewBoardDataAtPosition, migrateBoards
-  for (let i = 0; i < imageArray.length; i++) {
-    let board = {}
-    let uid = util.uidGen(5)
-    board.uid = uid
-    board.url = 'board-' + (insertAt + i) + '-' + board.uid + '.png'
-    board.layers = {
-      reference: {
-        url: board.url.replace('.png', '-reference.png')
-      }
-    }
-    board.newShot = false
-    board.lastEdited = Date.now()
-
-    boards.push(board)
-  }
-
-  let layerDataByBoardIndex = []
-  for (let i = 0; i < imageArray.length; i++) {
-    let layerData = {}
-    layerDataByBoardIndex.push({
-      reference: imageArray[i]
-    })
-  }
-
-  //
-  //
-  // insert boards from worksheet data
-  //
-  try {
-    notifications.notify({ message: 'Worksheet Import starting …', timing: 5 })
-
-    // store the "before" state
-    storeUndoStateForScene(true)
-
-    // save the current layers to disk
-    await saveImageFile()
-    await insertBoards(boardData.boards, insertAt, boards, { layerDataByBoardIndex })
-
-    markBoardFileDirty()
-    storeUndoStateForScene()
-    renderThumbnailDrawer()
-
-    sfx.positive()
-    notifications.notify({ message: 'Worksheet Import complete.', timing: 5 })
-    return gotoBoard(insertAt)
-  } catch (err) {
-    notifications.notify({ message: 'Whoops. Could not import.', timing: 8 })
-    log.info(err)
-  }
-}
-
 const migrateBoards = (oldBoards, insertAt = 0) => {
   let newBoards = []
 
@@ -6820,54 +6764,6 @@ ipcRenderer.on('exportPrintableWorksheetPdf', (event, sourcePath) => {
     sfx.error()
     notifications.notify({ message: "Could not export Worksheet PDF.", timing: 20 })
   }
-})
-
-
-ipcRenderer.on('importFromWorksheet', (event, args) => {
-  importFromWorksheet(args)
-})
-
-
-ipcRenderer.on('importNotification', () => {
-  let ip = getIpAddress()
-  if (ip) {
-    let message = "Did you know that you can import directly from your phone?\n\nOn your mobile phone, go to the web browser and type in: \n\n" + ip + ":1888"
-    notifications.notify({message: message, timing: 60})
-  }
-})
-
-let importWindow
-ipcRenderer.on('importWorksheets', (event, args) => {
-  if (!importWindow) {
-    importWindow = new remote.BrowserWindow({
-      width: 1200,
-      height: 800,
-      minWidth: 600,
-      minHeight: 600,
-      backgroundColor: '#333333',
-      show: false,
-      center: true,
-      parent: remote.getCurrentWindow(),
-      resizable: true,
-      frame: false,
-      modal: true,
-      webPreferences: {
-        nodeIntegration: true,
-        contextIsolation: false
-      }
-    })
-    remoteMain.enable(importWindow.webContents)
-    importWindow.loadURL(`file://${__dirname}/../../import-window.html`)
-  } else {
-    if (!importWindow.isVisible()) {
-      importWindow.webContents.send('worksheetImage',args)
-    }
-  }
-
-  importWindow.once('ready-to-show', () => {
-    importWindow.webContents.send('worksheetImage',args)
-  })
-  ipcRenderer.send('analyticsEvent', 'Board', 'show import window')
 })
 
 ipcRenderer.on('save', (event, args) => {

@@ -20,7 +20,6 @@ prefModule.init(path.join(app.getPath('userData'), 'pref.json'))
 const configureStore = require('./shared/store/configureStore')
 const defaultKeyMap = require('./shared/helpers/defaultKeyMap')
 
-const analytics = require('./analytics')
 
 const fountain = require('./vendor/fountain')
 const fountainDataParser = require('./fountain-data-parser')
@@ -145,8 +144,6 @@ const syncLanguages = (dir, isLanguageFile, array) => {
 }
 
 app.on('ready', async () => {
-  analytics.init(prefs.enableAnalytics)
-
   const exporterFfmpeg = require('./exporters/ffmpeg')
   let ffmpegVersion = await exporterFfmpeg.checkVersion()
   log.info('ffmpeg version', ffmpegVersion)
@@ -332,8 +329,6 @@ app.on('ready', async () => {
     return
   }
 
-
-  setInterval(()=>{ analytics.ping() }, 60*1000)
 })
 
 let openKeyCommandWindow = () => {
@@ -463,15 +458,13 @@ let openWelcomeWindow = () => {
     setTimeout(() => {
       welcomeWindow.show()
       if (!isDev) autoUpdater.init()
-      analytics.screenView('welcome')
-    }, 300)
+      }, 300)
 
   })
 
   welcomeWindow.once('close', () => {
     welcomeWindow = null
     if (!welcomeInprogress) {
-      analytics.event('Application', 'quit')
       app.quit()
     } else {
       welcomeInprogress = false
@@ -949,8 +942,6 @@ const createAndLoadScene = async aspectRatio => {
 
   addToRecentDocs(storyboarderFilePath, newBoardObject)
   loadStoryboarderWindow(storyboarderFilePath)
-
-  analytics.event('Application', 'new', newBoardObject.aspectRatio)
 }
 
 const createAndLoadProject = aspectRatio => {
@@ -1044,7 +1035,6 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
       detail: 'In file: ' + source + '#' + lineno + ':' + colno
     })
     log.error(message, source, lineno, colno)
-    analytics.exception(message, source, lineno)
   }
 
   ipcMain.on('errorInWindow', onErrorInWindow)
@@ -1052,7 +1042,6 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
   mainWindow.once('ready-to-show', () => {
     mainWindow.webContents.send('load', [filename, scriptData, locations, characters, boardSettings, currentPath])
     isLoadingProject = false
-    analytics.screenView('main')
   })
 
   // TODO could move this to main-window code?
@@ -1092,13 +1081,11 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
       //        (to take old's place)
       if (!isLoadingProject) {
         welcomeWindow.show()
-        analytics.screenView('welcome')
       }
 
       // stop watching any fountain files
       if (scriptWatcher) { scriptWatcher.close() }
 
-      analytics.event('Application', 'close')
     }
   })
 }
@@ -1395,7 +1382,6 @@ ipcMain.on('textInputMode', (event, arg)=> {
 
 menuBus.on('preferences', (event, arg) => {
   preferencesUI.show()
-  analytics.screenView('preferences')
 })
 
 menuBus.on('toggleGuide', (event, arg) => {
@@ -1454,19 +1440,15 @@ ipcMain.on('prefs:change', (event, arg) => {
 
 menuBus.on('showKeyCommands', (event, arg) => {
   openKeyCommandWindow()
-  analytics.screenView('key commands')
 })
 
 ipcMain.on('analyticsScreen', (event, screenName) => {
-  analytics.screenView(screenName)
 })
 
 ipcMain.on('analyticsEvent', (event, category, action, label, value) => {
-  analytics.event(category, action, label, value)
 })
 
 ipcMain.on('analyticsTiming', (event, category, name, ms) => {
-  analytics.timing(category, name, ms)
 })
 
 ipcMain.on('log', (event, opt) => {
@@ -1544,7 +1526,6 @@ menuBus.on('exportPDF', () => {
   if (!mainWindow) return
 
   printProject.show({ parent: mainWindow })
-  analytics.event('Board', 'show print window')
 })
 ipcMain.handle('exportPDF:getData', async () => {
   if (!mainWindow) return
@@ -1565,8 +1546,6 @@ menuBus.on('printWorksheet', () => {
   if (!mainWindow) return
 
   printWorksheet.show({ parent: mainWindow })
-
-  analytics.event('Board', 'show print worksheet window')
 })
 ipcMain.handle('printWorksheet:getData', async () => {
   if (!mainWindow) return
@@ -1580,29 +1559,6 @@ ipcMain.handle('printWorksheet:getData', async () => {
     })
     mainWindow.webContents.send('printWorksheet:getProjectData-request')
   })
-})
-
-// Worksheet Import
-menuBus.on('importWorksheets', async (event, arg) => {
-  try {
-    let { filePaths } = await dialog.showOpenDialog({
-      title: 'Import Worksheet',
-      filters:[
-        { name: 'Images', extensions: ['png', 'jpg', 'jpeg'] },
-      ],
-      properties: [
-        'openFile',
-      ]
-    })
-
-    if (filePaths.length) {
-      mainWindow.webContents.send('importWorksheets', filePaths)
-      mainWindow.webContents.send('importNotification', arg)
-    }
-
-  } catch (err) {
-    log.error(err)
-  }
 })
 
 ipcMain.on('exportPrintableWorksheetPdf', (event, sourcePath) =>

@@ -168,13 +168,6 @@ const createMenu = ({ store, send }) => {
         }
       },
       {
-        label: i18n.t('menu.file.import-worksheets'),
-        accelerator: keystrokeFor("menu:file:import-worksheets"),
-        click (item, focusedWindow, event) {
-          send('importWorksheets')
-        }
-      },
-      {
         type: 'separator'
       },
       {

@@ -38,7 +38,6 @@
       "clean-up-scene": "清理场景...",
       "print-pdf": "打印或导出为 PDF...",
       "print-storyboarder-worksheet": "打印 Storyboarder 工作表...",
-      "import-worksheets": "导入工作表...",
       "import-images-to-new-boards": "将图像导入为绘板...",
       "import-image-and-replace": "导入图像并替换...",
       "export-glTF": "导出为 GlTF"
