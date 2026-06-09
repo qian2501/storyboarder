@@ -185,7 +185,6 @@
     "i18next-fs-backend": "^2.6.4",
 
     "immer": "1.7.4",
-    "immer": "1.7.4",
     "jsonwebtoken": "^9.0.2",
     "layout-bmfont-text": "^1.3.4",
     "liquidmetal": "1.3.0",
@@ -235,7 +234,7 @@
     "zustand": "1.0.4"
   },
   "overrides": {
-    "@thi.ng/errors": "2.1.3",
+    "@thi.ng/errors": "2.6.15",
     "diff": "5.2.2",
     "serialize-javascript": "7.0.5",
     "cross-spawn": "6.0.6",

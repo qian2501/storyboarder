@@ -8,10 +8,13 @@ const externals = [
   ...Object.keys(pkg.dependencies || {}),
   ...Object.keys(pkg.devDependencies || {}),
   ...require('module').builtinModules
-]
+].filter(name => !name.startsWith('@thi.ng/'))
 
 module.exports = defineConfig({
   plugins: [react({ jsxRuntime: 'classic' })],
+  resolve: {
+    conditions: ['import', 'module', 'require', 'browser', 'default']
+  },
   esbuild: {
     loader: 'jsx',
     include: /\.js$/,

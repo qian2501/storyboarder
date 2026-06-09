@@ -17,7 +17,7 @@ const getExportFilename = (project, date) => {
     ? path.parse(project.scriptFilepath).name
     : path.parse(project.scenes[0].storyboarderFilePath).name
   let datestamp = dayjs(date).format('YYYY-MM-DD hh.mm.ss')
-  return filename = `${base} ${datestamp}.pdf`
+  return `${base} ${datestamp}.pdf`
 }
 
 const getExportFilepath = (context, event) =>

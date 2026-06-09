@@ -1,4 +1,5 @@
-const { Suspense, useRef, useEffect } = React = require('react')
+let React = require('react')
+const { Suspense, useRef, useEffect } = React
 const { useService } = require('@xstate/react')
 const { useTranslation } = require('react-i18next')
 
