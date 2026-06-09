@@ -3,7 +3,7 @@ const webpack = require('webpack')
 
 module.exports = {
   entry: './src/js/windows/language-preferences/window.js',
-  target: 'electron-main',
+  target: 'node',
   output: {
     path: path.resolve(__dirname, './../../src/build'),
     filename: 'language-preferences.js'
@@ -24,16 +24,11 @@ module.exports = {
                 }
               ],
               '@babel/preset-react'
-            ],
-            plugins: ['@babel/plugin-proposal-class-properties']
+            ]
           }
         }
       }
     ]
-  },
-  node: {
-    __dirname: false,
-    __filename: false
   },
   plugins: [
     new webpack.ProvidePlugin({

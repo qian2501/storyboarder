@@ -1,15 +1,12 @@
 const path = require('path')
-// via https://github.com/foliojs/fontkit/issues/67
 const nodeExternals = require('webpack-node-externals')
 
 module.exports = {
   entry: {
     'print-project': './src/js/windows/print-project/window.js'
   },
-  target: 'electron-renderer',
-  externals: [nodeExternals({
-    allowlist: [/^@thi.ng/]
-  })],
+  target: 'node',
+  externals: [nodeExternals()],
   output: {
     filename: '[name].js',
     path: path.resolve(__dirname, './../../src/build'),
@@ -29,18 +26,10 @@ module.exports = {
                 }
               ],
               '@babel/preset-react'
-            ],
-            plugins: [
-              '@babel/plugin-proposal-class-properties',
-              '@babel/plugin-proposal-optional-chaining'
             ]
           }
         }
       }
     ]
-  },
-  node: {
-    __dirname: false,
-    __filename: false
   }
 }
