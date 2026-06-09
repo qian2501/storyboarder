@@ -4,11 +4,12 @@ const {app, ipcMain, BrowserWindow, dialog, powerSaveBlocker} = electron = requi
 
 const fs = require('fs-extra')
 const path = require('path')
-const isDev = require('electron-is-dev')
+const isDev = !app.isPackaged
 const trash = require('trash')
 const chokidar = require('chokidar')
 const os = require('os')
 const log = require('./shared/storyboarder-electron-log')
+log.initialize()
 const fileSystem = require('fs')
 const EventEmitter = require('events')
 

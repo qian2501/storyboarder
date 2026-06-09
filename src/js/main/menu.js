@@ -1,5 +1,5 @@
 const { ipcMain, shell, app, Menu } = require('electron')
-const isDev = require('electron-is-dev')
+const isDev = !app.isPackaged
 
 const { createMachine, interpret, assign } = require('xstate')
 

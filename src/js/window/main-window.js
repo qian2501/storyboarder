@@ -13,9 +13,9 @@ const Color = require('color-js')
 const plist = require('plist')
 const R = require('ramda')
 const CAF = require('caf')
-const isDev = remote.require('electron-is-dev')
+const isDev = !remote.app.isPackaged
 const log = require('../shared/storyboarder-electron-log')
-log.catchErrors()
+log.errorHandler.startCatching()
 const ReactDOM = require('react-dom')
 const h = require('../utils/h')
 

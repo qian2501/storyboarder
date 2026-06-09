@@ -130,10 +130,9 @@ Object.equals = function( x, y ) {
     // test there constructor.
 
   for ( var p in x ) {
-    if ( ! x.hasOwnProperty( p ) ) continue;
-      // other properties were tested using x.constructor === y.constructor
+    if ( ! Object.prototype.hasOwnProperty.call(x, p) ) continue;
 
-    if ( ! y.hasOwnProperty( p ) ) return false;
+    if ( ! Object.prototype.hasOwnProperty.call(y, p) ) return false;
       // allows to compare x[ p ] and y[ p ] when set to undefined
 
     if ( x[ p ] === y[ p ] ) continue;
@@ -147,7 +146,7 @@ Object.equals = function( x, y ) {
   }
 
   for ( p in y ) {
-    if ( y.hasOwnProperty( p ) && ! x.hasOwnProperty( p ) ) return false;
+    if ( Object.prototype.hasOwnProperty.call(y, p) && ! Object.prototype.hasOwnProperty.call(x, p) ) return false;
       // allows x[ p ] to be set to undefined
   }
   return true;
