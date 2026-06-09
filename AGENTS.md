@@ -4,31 +4,41 @@
 
 ```bash
 npm install        # `legacy-peer-deps=true` is in .npmrc — do not remove it
-npm start          # runs webpack watch (2 windows) + electron in parallel
-npm run build      # webpack production build (only language-preferences + print-project)
+npm start          # runs Vite watch (2 windows) + electron in parallel
+npm run build      # Vite production build (only language-preferences + print-project)
 ```
 
-- **Most of the app runs directly from `src/js/` via Electron** — no webpack for the main window or main process.
-- Only `language-preferences` and `print-project` windows are webpack-bundled into `src/build/`.
+- **Most of the app runs directly from `src/js/` via Electron** — no bundler for the main window or main process.
+- Only `language-preferences` and `print-project` windows are Vite-bundled into `src/build/`.
+- Entry points: `src/js/windows/language-preferences/window.js` and `src/js/windows/print-project/window.js`.
 
 ## Testing
 
 ```bash
-npm test
+npm test              # runs all tests via scripts/run-tests.js (cross-platform)
+npm run clean:fixtures # reset test fixtures to committed state
 ```
-- Tests use **mocha** (non-renderer), **electron-mocha --renderer** (renderer tests), and **electron-mocha** (main process tests).
-- **The test command uses Unix `find`** — it will fail on Windows as-is. Test files are under `test/`.
+
+- `scripts/run-tests.js` discovers tests by file suffix and runs them in three batches:
+  - `*.test.js` (plain) → **mocha** (unit tests)
+  - `*.renderer.test.js` → **electron-mocha --renderer** (renderer process)
+  - `*.main.test.js` → **electron-mocha** (main process)
 - Test fixtures: `test/fixtures/` (`.storyboarder` files).
 
-## Lint & Typecheck
+## Lint
 
-**None configured.** This is plain JavaScript (Babel-transpiled). No ESLint, no TypeScript, no formatting tool.
+```bash
+npm run lint         # eslint src/js/
+```
+
+- ESLint v9 flat config (`eslint.config.js`), Babel parser, `@eslint/js` recommended rules.
+- No TypeScript, no formatting tool.
 
 ## Architecture
 
 ```
 src/js/main.js                          → Electron main process entry
-src/js/window/main-window.js            → Main renderer (~7000 lines; React + Redux + Canvas)
+src/js/window/main-window.js            → Main renderer (React + Redux + Canvas)
 src/js/main/menu.js                     → Application menu (xstate state machine)
 src/js/window/storyboarder-sketch-pane.js → Canvas drawing surface
 src/js/shared/store/configureStore.js   → Redux store (uses electron-redux for main↔renderer sync)
