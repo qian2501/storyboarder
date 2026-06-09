@@ -223,7 +223,7 @@ if (prefsModule.getPrefs().toolbar) {
 }
 
 const CanvasRecorder = require('../recording/canvas-recorder')
-const moment = require('moment')
+const dayjs = require('dayjs')
 let isRecording = false
 let isRecordingStarted = false
 let canvasRecorder
@@ -1659,7 +1659,7 @@ const loadBoardUI = async () => {
 
       isRecording = true
       let exportsPath = exporterCommon.ensureExportsPathExists(boardFilename)
-      let filename = path.basename(boardFilename, path.extname(boardFilename)) + " timelapse " + moment().format('YYYY-MM-DD hh.mm.ss')
+      let filename = path.basename(boardFilename, path.extname(boardFilename)) + " timelapse " + dayjs().format('YYYY-MM-DD hh.mm.ss')
       canvasRecorder = new CanvasRecorder({
         exportsPath: exportsPath,
         filename: filename,
@@ -6529,7 +6529,7 @@ const exportZIP = async () => {
   notifications.notify({ message: `Exporting ZIP file …` })
 
   let basename = path.basename(srcFilePath, path.extname(srcFilePath))
-  let timestamp = moment().format('YYYY-MM-DD hh.mm.ss')
+  let timestamp = dayjs().format('YYYY-MM-DD hh.mm.ss')
   let exportFilePath = path.join(boardPath, 'exports', `${basename}-${timestamp}.zip`)
 
   try {
@@ -6805,7 +6805,7 @@ ipcRenderer.on('exportPrintableWorksheetPdf', (event, sourcePath) => {
 
   let outputPath = path.join(
     exporterCommon.ensureExportsPathExists(boardFilename),
-    filename + ' ' + moment().format('YYYY-MM-DD hh.mm.ss') + '.pdf'
+    filename + ' ' + dayjs().format('YYYY-MM-DD hh.mm.ss') + '.pdf'
   )
 
   if (!fs.existsSync(outputPath)) {

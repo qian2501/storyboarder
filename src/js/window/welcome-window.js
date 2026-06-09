@@ -1,7 +1,9 @@
 const {ipcRenderer, shell} = require('electron')
 const remote = require('@electron/remote')
 const path = require('path')
-const moment = require('moment')
+const dayjs = require('dayjs')
+const relativeTime = require('dayjs/plugin/relativeTime')
+dayjs.extend(relativeTime)
 const menu = require('../menu')
 const sfx = require('../wonderunit-sound')
 const prefsModule = require('@electron/remote').require('./prefs')
@@ -93,7 +95,7 @@ let updateRecentDocuments = () => {
       filename = filename[filename.length-1]
       html.push(`<h2>${recentDocument.title}</h2>`)
 
-      let lastUpdated = moment(recentDocument.time).fromNow().toUpperCase()
+      let lastUpdated = dayjs(recentDocument.time).fromNow().toUpperCase()
       html.push(lastUpdated) // `// ${util.msToTime(recentDocument.totalMovieTime)} / ${recentDocument.totalPageCount} PAGES / ${String(recentDocument.totalWordCount).replace(/\B(?=(\d{3})+(?!\d))/g, ",")} WORDS`)
 
       html.push('</div></div>')

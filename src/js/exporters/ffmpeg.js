@@ -1,7 +1,7 @@
 const execa = require('execa')
 const fs = require('fs-extra')
 const path = require('path')
-const moment = require('moment')
+const dayjs = require('dayjs')
 const tmp = require('tmp')
 const os = require('os')
 
@@ -199,7 +199,7 @@ const convertToVideo = async opts => {
     console.log('\n')
 
     console.log('\n')
-    outputFilePath = path.join(outputPath, `${path.basename(sceneFilePath, path.extname(sceneFilePath))} Exported ${moment().format('YYYY-MM-DD hh.mm.ss')}.mp4`)
+    outputFilePath = path.join(outputPath, `${path.basename(sceneFilePath, path.extname(sceneFilePath))} Exported ${dayjs().format('YYYY-MM-DD hh.mm.ss')}.mp4`)
     console.log('writing to', outputFilePath)
     console.log('\n')
 

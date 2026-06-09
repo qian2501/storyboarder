@@ -2,7 +2,7 @@ const path = require('path')
 const PDFDocument = require('pdfkit')
 const v = require('@thi.ng/vectors')
 const { Rect } = require('@thi.ng/geom')
-const moment = require('moment')
+const dayjs = require('dayjs')
 const fs = require('fs')
 
 const pkg = require('../../../../package.json')
@@ -755,7 +755,7 @@ function generate ({ project }, cfg) {
 
           sceneDuration: sceneDuration(pageData.scene.data),
           aspectRatio: pageData.scene.data.aspectRatio,
-          date: moment(new Date()).format('D MMM YYYY')
+          date: dayjs(new Date()).format('D MMM YYYY')
         },
         pagination: {
           curr: pageData.index,

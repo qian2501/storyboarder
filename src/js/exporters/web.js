@@ -1,9 +1,10 @@
 const archiver = require('archiver')
 const fs = require('fs-extra')
-const moment = require('moment')
+const dayjs = require('dayjs')
 const path = require('path')
 const remote = require('@electron/remote')
-const request = require('request-promise-native')
+const fetch = require('node-fetch')
+const FormData = require('form-data')
 
 const boardModel = require('../models/board')
 const exporterCommon = require('./common')
@@ -228,7 +229,7 @@ const uploadToWeb = async sceneFilePath => {
   let sceneDirPath = path.dirname(sceneFilePath)
 
   let basename = path.basename(sceneFilePath, path.extname(sceneFilePath))
-  let timestamp = moment().format('YYYY-MM-DD hh.mm.ss')
+  let timestamp = dayjs().format('YYYY-MM-DD hh.mm.ss')
   let outputFolderPath = path.join(sceneDirPath, 'exports', `${basename}-web-${timestamp}`)
   let zipFilePath = path.join(path.dirname(outputFolderPath), `${path.basename(outputFolderPath)}.zip`)
 
@@ -276,26 +277,30 @@ const uploadToWeb = async sceneFilePath => {
 
     let scene = JSON.parse(fs.readFileSync(sceneFilePath))
 
-    let formData = {
-      title: path.basename(sceneFilePath, path.extname(sceneFilePath)),
+    let form = new FormData()
+    form.append('title', path.basename(sceneFilePath, path.extname(sceneFilePath)))
       // description: TODO populate from form
 
       // TODO use audio duration
-      duration: scene.boards[scene.boards.length - 1].time +
-                boardModel.boardDuration(scene, scene.boards[scene.boards.length - 1]),
-      boards: scene.boards.length,
-      width: Math.round(scene.aspectRatio * 720), // 1721,
-      height: 720,
-      zip: fs.createReadStream(zipFilePath)
-    }
+    form.append('duration', scene.boards[scene.boards.length - 1].time +
+                boardModel.boardDuration(scene, scene.boards[scene.boards.length - 1]))
+    form.append('boards', scene.boards.length)
+    form.append('width', Math.round(scene.aspectRatio * 720))
+    form.append('height', 720)
+    form.append('zip', fs.createReadStream(zipFilePath))
 
     let token = prefsModule.getPrefs().auth.token
 
-    let res = await request
-      .post({ url, formData, resolveWithFullResponse: true })
-      .auth(null, null, true, token)
+    let res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        ...form.getHeaders()
+      },
+      body: form
+    })
 
-    let json = JSON.parse(res.body)
+    let json = await res.json()
 
     console.log('Upload OK')
     console.log('message:', json.message, 'id:', json.id)

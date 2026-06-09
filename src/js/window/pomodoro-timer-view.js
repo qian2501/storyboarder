@@ -5,7 +5,9 @@ const PomodoroTimer = require('../pomodoro-timer')
 const prefsModule = require('@electron/remote').require('./prefs')
 const userDataHelper = require('../files/user-data-helper')
 const sfx = require('../wonderunit-sound')
-const moment = require('moment')
+const dayjs = require('dayjs')
+const duration = require('dayjs/plugin/duration')
+dayjs.extend(duration)
 const fs = require('fs')
 const tooltips = require('./tooltips')
 
@@ -331,7 +333,7 @@ class PomodorTimerView extends EventEmitter {
   getStartTimeFriendly() {
     // the timer immediately jumps to XX:59, so let's just start the display
     // at XX:59 to make it smooth
-    let mm = moment.duration(this.pomodoroTimerMinutes * 60 * 1000)
+    let mm = dayjs.duration(this.pomodoroTimerMinutes * 60 * 1000)
     let secondsFriendly = 59 // the input is always minutes, so -1 = 59 seconds
     let remainingFriendly = `${ this.pomodoroTimerMinutes > 60 && mm.hours() > 0 ? mm.hours()+":" : ""}${mm.minutes()-1}:${secondsFriendly}`
     return remainingFriendly

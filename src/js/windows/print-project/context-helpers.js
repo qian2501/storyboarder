@@ -1,4 +1,4 @@
-const moment = require('moment')
+const dayjs = require('dayjs')
 const path = require('path')
 const fs = require('fs-extra')
 const os = require('os')
@@ -16,7 +16,7 @@ const getExportFilename = (project, date) => {
   let base = project.scenes.length > 1
     ? path.parse(project.scriptFilepath).name
     : path.parse(project.scenes[0].storyboarderFilePath).name
-  let datestamp = moment(date).format('YYYY-MM-DD hh.mm.ss')
+  let datestamp = dayjs(date).format('YYYY-MM-DD hh.mm.ss')
   return filename = `${base} ${datestamp}.pdf`
 }
 

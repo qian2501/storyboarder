@@ -3,7 +3,9 @@ const fs = require('fs')
 const path = require('path')
 const pdfDocument = require('pdfkit')
 const qr = require('qr-image')
-const moment = require('moment')
+const dayjs = require('dayjs')
+const advancedFormat = require('dayjs/plugin/advancedFormat')
+dayjs.extend(advancedFormat)
 const app = require('@electron/remote').app
 
 const util = require('../../utils/index')
@@ -124,7 +126,7 @@ class WorksheetPrinter extends EventEmitter {
                 doc.text(t, margin[0], margin[1], {align: 'left'})
                 let w = doc.widthOfString(t, {align: 'left'})
                 doc.font('thin')
-                doc.text('DRAFT: ' + moment().format('MMMM Do, YYYY').toUpperCase(), margin[0]+w+7, margin[1], {align: 'left'})
+                doc.text('DRAFT: ' + dayjs().format('MMMM Do, YYYY').toUpperCase(), margin[0]+w+7, margin[1], {align: 'left'})
                 doc.fontSize(14)
                 doc.font('bold')
                 doc.text(node.slugline, margin[0], margin[1]+8, {align: 'left'})
@@ -141,7 +143,7 @@ class WorksheetPrinter extends EventEmitter {
     } else {
       doc.font('thin')
       doc.fontSize(8)
-      doc.text('DRAFT: ' + moment().format('MMMM Do, YYYY').toUpperCase(), margin[0], margin[1], {align: 'left'})
+      doc.text('DRAFT: ' + dayjs().format('MMMM Do, YYYY').toUpperCase(), margin[0], margin[1], {align: 'left'})
     }
 
     if (tipString) {

@@ -2,7 +2,7 @@ require('electron-redux/preload')
 const { ipcRenderer } = require('electron')
 const { app } = remote = require('@electron/remote')
 const JWT = require('jsonwebtoken')
-const moment = require('moment')
+const dayjs = require('dayjs')
 const { machineIdSync } = require('node-machine-id')
 const fs = require('fs')
 const path = require('path')
@@ -231,9 +231,9 @@ class HomeView {
 
       let asItem = subscription => `
         <tr>
-          <td>${moment(subscription.start).format('DD MMM YYYY')}</td>
+          <td>${dayjs(subscription.start).format('DD MMM YYYY')}</td>
           <td>${subscription.expires != null
-            ? moment(subscription.expires).format('DD MMM YYYY')
+            ? dayjs(subscription.expires).format('DD MMM YYYY')
             : "Never"
           }</td>
           <td>

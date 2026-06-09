@@ -1,7 +1,7 @@
 const fs = require('fs-extra')
 const path = require('path')
 const GIFEncoder = require('gifencoder')
-const moment = require('moment')
+const dayjs = require('dayjs')
 const app = require('@electron/remote').app
 const { dialog } = require('@electron/remote')
 
@@ -53,7 +53,7 @@ class Exporter {
     let basename = path.basename(projectFileAbsolutePath)
     let outputPath = path.join(
       exportsPath,
-      util.dashed(basename + ' Exported ' + moment().format('YYYY-MM-DD hh.mm.ss'))
+      util.dashed(basename + ' Exported ' + dayjs().format('YYYY-MM-DD hh.mm.ss'))
     )
     if (!fs.existsSync(outputPath)) {
       fs.mkdirSync(outputPath)
@@ -102,7 +102,7 @@ class Exporter {
       if (!outputPath) {
         outputPath = path.join(
           exportsPath,
-          basename + ' Images ' + moment().format('YYYY-MM-DD hh.mm.ss')
+          basename + ' Images ' + dayjs().format('YYYY-MM-DD hh.mm.ss')
         )
       }
 
@@ -195,7 +195,7 @@ class Exporter {
     let basename = path.basename(projectFileAbsolutePath, path.extname(projectFileAbsolutePath))
     let filepath = path.join(
       exportsPath,
-      basename + ' ' + moment().format('YYYY-MM-DD hh.mm.ss') + '.gif'
+      basename + ' ' + dayjs().format('YYYY-MM-DD hh.mm.ss') + '.gif'
     )
 
     encoder.createReadStream().pipe(fs.createWriteStream(filepath))

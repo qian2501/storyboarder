@@ -1,6 +1,6 @@
 const { ipcRenderer } = require('electron')
 const remote = require('@electron/remote')
-const request = require('request-promise-native')
+const fetch = require('node-fetch')
 
 const exporterWeb = require('./js/exporters/web')
 
@@ -51,9 +51,18 @@ const onSubmit = async event => {
   }
 
   try {
-    let res = await request.post({ url, formData, resolveWithFullResponse: true })
+    let res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams(formData).toString()
+    })
+    if (!res.ok) {
+      const err = new Error(res.statusText)
+      err.statusCode = res.status
+      throw err
+    }
 
-    let json = JSON.parse(res.body)
+    let json = await res.json()
 
     if (!json.token) {
       throw new Error('No token')

@@ -1,5 +1,7 @@
 const EventEmitter = require('events').EventEmitter
-const moment = require('moment')
+const dayjs = require('dayjs')
+const duration = require('dayjs/plugin/duration')
+dayjs.extend(duration)
 
 class PomodoroTimer extends EventEmitter {
   constructor(options={duration: 25*60*1000, updateInterval: 300}) {
@@ -50,7 +52,7 @@ class PomodoroTimer extends EventEmitter {
     if(this.elapsed >= this.duration) {
       this.complete()
     } else {
-      let mm = moment.duration(remaining)
+      let mm = dayjs.duration(remaining)
       let remainingFriendly = `${ mm.hours() > 0 ? mm.hours()+":" : ""}${mm.minutes()}:${mm.seconds() > 9 ? mm.seconds() : '0'+mm.seconds()}`
       this.emit("update", {"elapsed": this.elapsed, "remaining": remaining, "state": this.state, "remainingFriendly": remainingFriendly})
     }
@@ -70,7 +72,7 @@ class PomodoroTimer extends EventEmitter {
             this.startTime = Date.now()
             this.intervalID = setInterval(this.timer.bind(this), this.updateInterval)
             let remaining = this.getRemaining()
-            let mm = moment.duration(remaining)
+            let mm = dayjs.duration(remaining)
             let remainingFriendly = `${mm.minutes()}:${mm.seconds()}`
             update = {"elapsed": this.elapsed, "remaining": remaining, "state": this.state, "remainingFriendly": remainingFriendly}
             break
